@@ -1,0 +1,28 @@
+|| html2mobile
+=====================
+
+Developing in Eclipse
+=====================
+
+If the eclipse:eclipse plugin has never been used on your workspace, run:
+
+$ mvn -Declipse.workspace=<path-to-eclipse-workspace> eclipse:add-maven-repo
+
+To set up the project or after changing dependencies in the POM, run:
+
+$ mvn -DdownloadSources=true -DdownloadJavadocs=true eclipse:eclipse
+
+After changing dependencies, refresh the project in Eclipse.  For first-time 
+setup, Import Project -> Existing Project, uncheck Copy to workspace before 
+completing the import.
+
+
+Running Locally
+===============
+
+Use the Maven Jetty plugin:
+
+$ mvn jetty:run-war
+
+Then access the servlets under http://127.0.0.1:8080/html2mobile/
+
