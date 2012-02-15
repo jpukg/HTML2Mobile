@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="html2mobile_1.xsl"?>
+<!-- Edited by XMLSpy® -->
+<html2mobile>
+   <requestinfo>
+   </requestinfo>
+   <document>
+      <links>
+         <navigation>
+            <text>Home</text>
+            <link>www.example.com/home.php</link>
+         </navigation>
+         <navigation>
+            <text>Links</text>
+            <link>www.example.com/links.php</link>
+         </navigation>
+         <navigation>
+            <text>Pictures</text>
+            <link>www.example.com/pictures.php</link>
+         </navigation>
+         <navigation>
+            <text>Contact Us</text>
+            <link>www.example.com/contact.php</link>
+         </navigation>
+
+         <sitemap>
+         </sitemap>
+
+         <embedded>
+            <text>Awesome Blog</text>
+            <link>www.blog.com/?node=31415926553</link>
+         </embedded>
+         <embedded>
+            <text>Check out this video!!</text>
+            <link>www.youtube.com/?node=31415926553</link>
+         </embedded>
+      </links>
+      <content>
+         <main>
+            <summary>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis congue laoreet leo eget mollis. Fusce ornare, velit consectetur adipiscing consequat, orci ligula feugiat dolor, eu egestas nisl eros mollis nulla. Integer in nulla
+            </summary>
+            <fulltext>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis congue laoreet leo eget mollis. Fusce ornare, velit consectetur adipiscing consequat, orci ligula feugiat dolor, eu egestas nisl eros mollis nulla. Integer in nulla purus. Nullam pellentesque bibendum ligula eu feugiat. Donec luctus lectus pulvinar massa laoreet gravida. Donec id egestas enim. Vestibulum turpis ligula, egestas tempus bibendum ac, porta at lacus. Mauris ligula nunc, posuere eu mattis at, vehicula in elit. Aliquam sodales neque vel nulla laoreet ac vehicula nisi laoreet. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris imperdiet diam ut massa lobortis aliquam.
+
+Sed semper enim libero, et vulputate augue. Fusce rutrum ligula nec dolor consectetur elementum. Nam a dui ipsum, ut commodo dui. Donec imperdiet ornare lectus, porttitor rutrum urna aliquam ut. Mauris urna lectus, fermentum quis condimentum nec, cursus non purus. Quisque non magna congue ligula gravida blandit nec vitae leo. Aliquam et aliquam sem. Vestibulum id tortor fringilla tortor rutrum dignissim. Duis malesuada, elit ut ultricies semper, diam risus feugiat felis, non rutrum dolor arcu eu nunc. In ultricies nisl eu est consectetur laoreet. Vivamus sapien sem, fermentum at vestibulum in, semper quis ante. Mauris vel nisi elit, pretium vulputate felis. Vivamus vestibulum nibh quis nisi gravida sit amet tincidunt turpis aliquam. Etiam at vestibulum turpis. Quisque eu pharetra augue. Duis venenatis risus vitae libero rutrum a vestibulum turpis dignissim.
+
+Etiam posuere volutpat pharetra. Etiam iaculis dolor sed sapien vestibulum ut ornare lectus scelerisque. Phasellus nec metus nec nisl vehicula egestas eu at augue. Donec pellentesque diam est, id hendrerit erat. Sed at tellus risus, quis laoreet sapien. Duis venenatis, purus vitae luctus pretium, ante eros mollis nunc, nec adipiscing libero diam nec felis. Morbi a nisl eget arcu blandit tristique. Integer et congue sem. Suspendisse congue nibh nec risus tincidunt non varius neque sodales. Quisque eros neque, tincidunt sed vehicula ut, laoreet vitae enim. Aliquam erat volutpat. Etiam congue pharetra ante sed viverra. Donec ut dui in lacus fringilla eleifend.
+            </fulltext>
+         </main>
+
+         <form>
+            <!--
+            <code>
+               I dont know how to embed code yet...
+            </code>
+            -->
+         </form>
+
+         <notes>
+            <summary>
+I am a avid blogger living in southern California. Hit me up if you want to chill
+            </summary>
+            <fulltext>
+I am a avid blogger living in southern California. Hit me up if you want to chill and shred some surf bra!
+            </fulltext>
+         </notes>
+      </content>
+
+      <tables>  
+            <!--
+            <code>
+               I dont know how to embed code yet...
+            </code>
+            -->       
+      </tables>
+
+      <media>
+         <picture>
+            <alt>So awesome!</alt>
+            <src>http://new-surfingtips.com/Australia-surf-2008.jpg</src>
+         </picture>
+         <picture>
+            <alt>Im so high...</alt>
+            <src>http://us.123rf.com/400wm/400/400/tekart/tekart0910/tekart091000005/5723627-rocket-ship-leaves-earth-and-travels-to-the-moon.jpg</src>
+         </picture>
+         <video>
+         </video>
+         <audio>
+         </audio>
+      </media>
+   </document>
+</html2mobile>

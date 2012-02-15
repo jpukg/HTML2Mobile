@@ -20,11 +20,11 @@ public class HTML2MobileServlet extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 		// Set up Dummy XML
-		File xmlFile = new File("test.xml");
+		File xmlFile = new File("html2mobile_1.xml");
 		Source xmlSource = new StreamSource(xmlFile);
 
 		// Set up Dummy XSL
-		File xsltFile = new File("test.xsl");
+		File xsltFile = new File("html2mobile_1.xsl");
 		Source xsltSource = new StreamSource(xsltFile);
 
 		// Apply XSL Transformation to XML
