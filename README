@@ -1,0 +1,25 @@
+|| html2mobile
+=====================
+
+If you have Eclipse and the Google Plugin for Eclipse installed already, just import the project into eclipse.
+
+Installing Eclipse and the Google Plugin for Eclipse
+====================================================
+Download Eclipse if you don't have it:
+    http://www.eclipse.org/downloads/
+
+The plugin includes everything you need to build, test and deploy your app, entirely within Eclipse.
+The plugin is available for Eclipse versions 3.3, 3.4, 3.5, and 3.6.
+You can install the plugin using the Software Update feature of Eclipse.
+
+The installation locations are as follows:
+    The Google Plugin for Eclipse, for Eclipse 3.3 (Europa):
+        http://dl.google.com/eclipse/plugin/3.3
+    The Google Plugin for Eclipse, for Eclipse 3.4 (Ganymede):
+        http://dl.google.com/eclipse/plugin/3.4
+    The Google Plugin for Eclipse, for Eclipse 3.5 (Galileo):
+        http://dl.google.com/eclipse/plugin/3.5
+    The Google Plugin for Eclipse, for Eclipse 3.6 (Helios):
+        http://dl.google.com/eclipse/plugin/3.6
+
+If you need more help, see: http://code.google.com/appengine/docs/java/tools/eclipse.html
