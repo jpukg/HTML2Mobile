@@ -5,11 +5,12 @@
 <xsl:template match="/">
 <html>
   <head>
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a1/jquery.mobile-1.0a1.min.css" />  
-	<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.3.min.js"></script>
-	<script type="text/javascript" src="http://code.jquery.com/mobile/1.0a1/jquery.mobile-1.0a1.min.js"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
+	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
   </head>
   <body>
+start
 <div data-role="page" data-theme="b" id="jqm-home">
     <div data-role="content"> 
   
@@ -17,13 +18,11 @@
 <ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 
 	<!-- Links List -->
-	<li>Links</li>
-	<li>
+	<li>Links
 		<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 
 			<!-- Navigation List -->
-			<li>Navigation</li>
-			<li>
+			<li>Navigation
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:for-each select="html2mobile/document/links/navigation">
 						<li><a href="#"><xsl:value-of select="text"/></a></li>
@@ -32,8 +31,7 @@
 				</ul></li>
 
 			<!-- Sitemap List -->
-			<li>Sitemap</li>
-			<li>
+			<li>Sitemap
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:for-each select="html2mobile/document/links/sitemap">
 						<li><a href="#"><xsl:value-of select="text"/></a></li>
@@ -43,8 +41,7 @@
 			</li>
 
 			<!-- Embedded Links List -->
-			<li>Embedded Links</li>
-			<li>
+			<li>Embedded Links
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:for-each select="html2mobile/document/links/embedded">
 						<li><a href="#"><xsl:value-of select="text"/></a></li>
@@ -58,13 +55,11 @@
 	</li>
 
 	<!-- Content List -->
-	<li>Content</li>
-	<li>
+	<li>Content
 		<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 
 			<!-- Main Content -->
-			<li>Main Content</li>
-			<li>
+			<li>Main Content
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e">
 					<li><xsl:value-of select="html2mobile/document/content/main/summary"/><a href="#">more...</a></li>
 				<!-- End Main Content -->
@@ -72,8 +67,7 @@
 			</li>
 
 			<!-- Form Content -->
-			<li>Form Content</li>
-			<li>
+			<li>Form Content
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:for-each select="html2mobile/document/content/form">
 						<li><xsl:value-of select="code"/></li>
@@ -83,8 +77,7 @@
 			</li>
 
 			<!-- Notes Content List -->
-			<li>Notes Content</li>
-			<li>
+			<li>Notes Content
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:for-each select="html2mobile/document/content/notes">
 						<li><xsl:value-of select="summary"/><a href="#">more...</a></li>
@@ -98,13 +91,11 @@
 	</li>
 
 	<!-- Media List -->
-	<li>Media</li>
-	<li>
+	<li>Media
 		<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 
 			<!-- Picture List -->
-			<li>Pictures</li>
-			<li>
+			<li>Pictures
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:for-each select="html2mobile/document/media/pictures">
 						<li><xsl:value-of select="src"/></li>
@@ -114,8 +105,7 @@
 			</li>
 
 			<!-- Video List -->
-			<li>Videos</li>
-			<li>
+			<li>Videos
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:for-each select="html2mobile/document/media/videos">
 						<li><xsl:value-of select="src"/></li>
@@ -125,8 +115,7 @@
 			</li>
 
 			<!-- Audio List -->
-			<li>Audio</li>
-			<li>
+			<li>Audio
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:for-each select="html2mobile/document/media/audio">
 						<li><xsl:value-of select="src"/></li>
@@ -138,13 +127,11 @@
 		<!-- End Media List -->
 		</ul>
 	</li>
-
 <!-- End Main List -->
-</ul> 
-
-    </div>
+</ul>
+	</div>
 </div>​
-  </body>
+</body>
 </html>
 </xsl:template>
 </xsl:stylesheet>
