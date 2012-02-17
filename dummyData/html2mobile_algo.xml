@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="html2mobile_1.xsl"?>
+<!-- Edited by XMLSpy® -->
+<html2mobile>
+   <requestinfo>
+   </requestinfo>
+   <document>
+      <links>
+         <linkgroup name="name|id">
+            <link>
+               <!---
+
+               1. Parse page and pull out groupings of links.
+
+               <text>...</text>
+               <href>...</href>
+               -->
+            </link>
+         </linkgroup>
+
+<!--            ###  KILL THIS? ###
+
+         <navigation>
+            <!-
+
+            1. Look for "div[id~=[.*[nN][aA][vV].*]"
+                Stop here? If not filled in, too bad?
+            2. Look for "a[href~=[.*" + baseUrl + ".*]"
+                And handle relative links (how?)
+
+            <text>...</text>
+            <link>...</link>
+            ->
+         </navigation>
+         <sitemap>
+            <!-
+
+            1. All links minus other domains minus duplicates
+            2. Look for "a[href~=[.*" + baseUrl + ".*]"
+                And handle relative links (how?)
+
+            <text>...</text>
+            <link>...</link>
+            ->
+         </sitemap>
+         <embedded>
+            <!-
+
+            1. All links minus Navigation minus Sitemap - duplicates
+            2. Grab during content parsing?
+
+            <text>...</text>
+            <link>...</link>
+            ->
+         </embedded>
+         -->
+      </links>
+      <content>
+         <main>
+            <!--
+            <summary>
+			   ...
+            </summary>
+            <fulltext>
+			   ...
+            </fulltext>
+            -->
+         </main>
+         <form>
+            <!--
+
+            1. Look for "form" and enclose all html in 
+
+            <code>
+               ...
+            </code>
+            -->
+         </form>
+         <notes>
+            <!--
+            <summary>
+			   ...
+            </summary>
+            <fulltext>
+			   ...
+            </fulltext>
+            -->
+         </notes>
+      </content>
+
+      <tables>         
+      </tables>
+
+      <media>
+         <picture>
+            <!--
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </picture>
+         <video>
+            <!--
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </video>
+         <audio>
+            <!--
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </audio>
+      </media>
+   </document>
+</html2mobile>

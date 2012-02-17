@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="html2mobile_1.xsl"?>
+<!-- Edited by XMLSpy® -->
+<html2mobile>
+   <requestinfo>
+   </requestinfo>
+   <document>
+      <links>
+         <linkgroup name="name|id">
+            <link>
+               <!---
+
+               1. Parse page and pull out groupings of links.
+
+               <text>...</text>
+               <href>...</href>
+               -->
+            </link>
+         </linkgroup>
+      </links>
+      <content>
+         <main>
+            <!--
+            <summary>
+			   ...
+            </summary>
+            <fulltext>
+			   ...
+            </fulltext>
+            -->
+         </main>
+         <form>
+            <!--
+
+            1. Look for "form" and enclose all html
+
+            <code>
+               ...
+            </code>
+            -->
+         </form>
+         <notes>
+            <!--
+            <summary>
+			   ...
+            </summary>
+            <fulltext>
+			   ...
+            </fulltext>
+            -->
+         </notes>
+      </content>
+
+      <tables>         
+      </tables>
+
+      <media>
+         <picture>
+            <!--
+
+            1. Look for all "img" (and convert to thumbnails? or alt text representation?)
+
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </picture>
+         <video>
+            <!--
+
+            1. Look for all "object" (and convert to thumbnails? make into links?)
+
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </video>
+         <audio>
+            <!--
+
+            Good way of handling this?
+
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </audio>
+      </media>
+   </document>
+</html2mobile>
