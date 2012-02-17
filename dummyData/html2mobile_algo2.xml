@@ -11,6 +11,8 @@
                <!---
 
                1. Parse page and pull out groupings of links.
+               2. Foreach "a" look at "a"s in parent element to find link groups.
+                   Define this better later.
 
                <text>...</text>
                <href>...</href>
