@@ -16,14 +16,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
-
 public class DumbProxyServlet extends HttpServlet {
 	private static final Pattern hasHost =
-			Pattern.compile("^(https?:)?//.*", Pattern.CASE_INSENSITIVE);
+		Pattern.compile("^(https?:)?//.*", Pattern.CASE_INSENSITIVE);
 	public static String rewriteDirectResource(URL requestURL, String targetURL)
-			throws MalformedURLException {
+	throws MalformedURLException {
 		// no rewrite when the host is included
 		if( hasHost.matcher(targetURL).matches() ) {
 			return targetURL;
@@ -53,13 +50,15 @@ public class DumbProxyServlet extends HttpServlet {
 			throw new ServletException("Cannot parse: " + urlParam, e);
 		}
 
+		/* Jersey Reference
 		// fetch the URL
 		Client client = Client.create();
 		WebResource res = client.resource(urlParam);
 		String contents = res.get(String.class);
-
 		// parse the document
-		Document doc = Jsoup.parse(contents);
+		Document doc = Jsoup.parse(contents); */
+
+		Document doc = Jsoup.connect(url.toString()).get();
 
 		String requestURI = req.getRequestURI() + "?url=";
 
@@ -67,10 +66,10 @@ public class DumbProxyServlet extends HttpServlet {
 		StringBuilder rewrites = new StringBuilder("-LINKS:\n");
 		for( Element link : doc.select("a[href]") ) {
 			String href = link.attr("href"),
-					newHref = href;
+			newHref = href;
 			if( !hasHost.matcher(href).matches() ) {
 				newHref =
-						new URL(url.getProtocol(), url.getHost(), url.getPort(), href).toExternalForm();
+					new URL(url.getProtocol(), url.getHost(), url.getPort(), href).toExternalForm();
 			}
 			newHref = requestURI + URLEncoder.encode(newHref, "UTF-8");
 			rewrites.append('\'').append(href).append("' => '").append(newHref).append("'\n");
