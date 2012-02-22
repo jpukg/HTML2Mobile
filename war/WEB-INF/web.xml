@@ -12,6 +12,18 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	   <servlet-name>DumbProxy</servlet-name>
 	   <servlet-class>edu.gatech.cc.HTML2Mobile.DumbProxyServlet</servlet-class>
 	</servlet>
+	<servlet>
+	   <servlet-name>Form_Parsing</servlet-name>
+	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.FormParserServlet</servlet-class>
+	</servlet>
+	<servlet>
+	   <servlet-name>Media_Parsing</servlet-name>
+	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.MediaServlet</servlet-class>
+	</servlet>
+	<servlet>
+	   <servlet-name>Link_Parsing</servlet-name>
+	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.LinkParserServlet</servlet-class>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>DumbProxy</servlet-name>
 		<url-pattern>/proxy</url-pattern>
@@ -19,6 +31,18 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	<servlet-mapping>
 		<servlet-name>HTML2Mobile</servlet-name>
 		<url-pattern>/html2mobile</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Form_Parsing</servlet-name>
+		<url-pattern>/form_query</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Media_Parsing</servlet-name>
+		<url-pattern>/media</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Link_Parsing</servlet-name>
+		<url-pattern>/link_parsing</url-pattern>
 	</servlet-mapping>
 	<welcome-file-list>
 		<welcome-file>html2mobile</welcome-file>
