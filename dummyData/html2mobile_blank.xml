@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="html2mobile_1.xsl"?>
+<!-- Edited by XMLSpy® -->
+<html2mobile>
+   <requestinfo>
+   </requestinfo>
+   <document>
+      <links>
+         <navigation>
+            <!--
+            <text>...</text>
+            <link>...</link>
+            -->
+         </navigation>
+         <sitemap>
+            <!--
+            <text>...</text>
+            <link>...</link>
+            -->
+         </sitemap>
+         <embedded>
+            <!--
+            <text>...</text>
+            <link>...</link>
+            -->
+         </embedded>
+      </links>
+      <content>
+         <main>
+            <!--
+            <summary>
+			   ...
+            </summary>
+            <fulltext>
+			   ...
+            </fulltext>
+            -->
+         </main>
+         <form>
+            <!--
+            <code>
+               ...
+            </code>
+            -->
+         </form>
+         <notes>
+            <!--
+            <summary>
+			   ...
+            </summary>
+            <fulltext>
+			   ...
+            </fulltext>
+            -->
+         </notes>
+      </content>
+
+      <tables>         
+      </tables>
+
+      <media>
+         <picture>
+            <!--
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </picture>
+         <video>
+            <!--
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </video>
+         <audio>
+            <!--
+            <alt>...</alt>
+            <src>...</src>
+            -->
+         </audio>
+      </media>
+   </document>
+</html2mobile>
