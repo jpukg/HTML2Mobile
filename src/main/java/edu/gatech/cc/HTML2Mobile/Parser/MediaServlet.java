@@ -27,6 +27,13 @@ public class MediaServlet extends JSoupServlet {
 			toRet.append("</picture>\n");
 		}
 
+		/*
+		 * Do we want to support embedded youtube videos as well? (Flash)
+		 * I think they are doing it in an iframe now so we may be able
+		 * to force it to "fallback" to html5. Check the source of:
+		 * 
+		 * http://www.youtube.com/embed/kPdYpST_yoE?version=3&amp;rel=1&amp;fs=1&amp;showsearch=0&amp;showinfo=1&amp;iv_load_policy=1&amp;wmode=transparent
+		 */
 		// Grab Videos(HTML5)
 		for(Element media : doc.select("video")) {
 			toRet.append("<video>\n");
