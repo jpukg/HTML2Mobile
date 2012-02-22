@@ -29,13 +29,20 @@ public class MediaServlet extends JSoupServlet {
 
 		// Grab Videos(HTML5)
 		for(Element media : doc.select("video")) {
-			toRet.append("<video>\n");
+			toRet.append("<video type='html5'>\n");
 			toRet.append(printAttributes(media.attributes()));
 			for(Element source : media.children()) {
-				toRet.append("<" + source.tagName() + ">\n");
+				toRet.append("<").append(source.tagName()).append(">\n");
 				toRet.append(printAttributes(source.attributes()));
-				toRet.append("</" + source.tagName() + ">\n");
+				toRet.append("</").append(source.tagName()).append(">\n");
 			}
+			toRet.append("</video>\n");
+		}
+
+		// Grab Videos(Youtube)
+		for(Element media : doc.select("embed[src*=http://www.youtube.com], iframe[src*=http://www.youtube.com]")) {
+			toRet.append("<video type='youtube'>\n");
+			toRet.append(printAttributes(media.attributes()));
 			toRet.append("</video>\n");
 		}
 
