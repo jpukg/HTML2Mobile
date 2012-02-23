@@ -13,6 +13,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResourceLinkHeaders;
 
 /** Misc methods to dump debug info. */
 public class DebugUtil {
@@ -26,7 +27,7 @@ public class DebugUtil {
 	 * @param r the response
 	 */
 	public static void dumpClientResponse(ClientResponse r) {
-		System.out.println("DumbProxyServlet.dumpClientResponse()");
+		System.out.println("\nCLIENT RESPONSE:");
 
 		Date lastMod = null;
 		try {
@@ -36,19 +37,31 @@ public class DebugUtil {
 		}
 		System.out.println(String.format("location=%s%n" +
 				"type=%s%n" +
-				"status=%s",
+				"status=%s%n" +
+				"allow=%s",
 				r.getLocation(),
 				r.getType(),
-				r.getClientResponseStatus()
+				r.getClientResponseStatus(),
+				r.getAllow()
 				));
 		if( lastMod != null ) {
 			System.out.println("modified=" + lastMod);
 		}
+
+		System.out.println("properties=");
+		for( Map.Entry<String, Object> entry : r.getProperties().entrySet() ) {
+			System.out.println("  " + entry.getKey() + "=" + entry.getValue());
+		}
+
+		WebResourceLinkHeaders links = r.getLinks();
+		System.out.println("links=" + links);
+
 		System.out.println("headers=");
 		MultivaluedMap<String, String> h = r.getHeaders();
 		for( Map.Entry<String, List<String>> entry : h.entrySet() ) {
 			System.out.println("  " + entry.getKey() + "=" + entry.getValue());
 		}
+
 		System.out.println("cookies=");
 		for( NewCookie cookie : r.getCookies() ) {
 			System.out.println("  " + newCookieToString(cookie));
@@ -61,7 +74,7 @@ public class DebugUtil {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void dumpRequestInfo(HttpServletRequest req) {
-		System.out.println("DumbProxyServlet.dumpRequestInfo()");
+		System.out.println("\nHTTP-SERVLET-REQUEST:");
 		System.out.println(String.format("method=%s%n" +
 				"context-path=%s%n" +
 				"path-info=%s%n" +
