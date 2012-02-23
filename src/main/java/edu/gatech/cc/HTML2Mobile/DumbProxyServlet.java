@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
@@ -32,13 +31,21 @@ import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
+import edu.gatech.cc.HTML2Mobile.helper.Pair;
 
 /** Proof of concept proxying servlet. */
-public class DumbProxyServlet extends HttpServlet {
+public class DumbProxyServlet extends JSoupServlet {
+	//
+	// Static fields and methods
 	private static final long serialVersionUID = 1L;
 
+	/** Compile-time constant for loging debug info. */
 	private static final boolean DEBUG = true;
 
+	/** Attribute name where the remote URL will be stored. */
+	protected static final String ATTR_REMOTE_URL = "proxyURL";
+
+	/** Jersey web client for sending proxied requests. */
 	protected static final Client webClient;
 	static {
 		webClient = Client.create();
@@ -101,6 +108,48 @@ public class DumbProxyServlet extends HttpServlet {
 		return newTarget.toExternalForm();
 	}
 
+	//
+	// Instance fields / methods
+
+	/** The maximum number of redirects per request. */
+	protected int maxRedirects = 20;
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		this.doGet(req, resp);
+	}
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		// TODO: move into JSoupServlet
+		if( DEBUG ) {
+			DebugUtil.dumpRequestInfo(req);
+		}
+
+		URL url = this.getProxiedURL(req);
+
+		Pair<ClientResponse, URL> result = this.sendRequest(url, req);
+		ClientResponse response = result.getOne();
+		url = result.getTwo();
+
+		// for process method to find
+		req.setAttribute(ATTR_REMOTE_URL, url);
+
+		this.copyProxiedCookies(response, req, resp);
+
+		// parse the document
+		String contents = response.getEntity(String.class);
+		Document doc = Jsoup.parse(contents);
+
+		// this implementation rewrites various element urls
+		String output = this.process(doc, req);
+
+		// write out the new contents
+		PrintWriter writer = resp.getWriter();
+		writer.write(output);
+		writer.flush();
+	}
+
 	/**
 	 * Prepares a Jersey client request.
 	 * 
@@ -115,9 +164,8 @@ public class DumbProxyServlet extends HttpServlet {
 	 * 
 	 * @throws URISyntaxException if <code>target</code> cannot be parsed as a {@link URI}
 	 */
-	public static WebResource.Builder prepareClientRequest(URL target, HttpServletRequest req, boolean isPost)
-			throws URISyntaxException {
-		WebResource res = webClient.resource(target.toURI());
+	protected WebResource.Builder prepareClientRequest(URL target, HttpServletRequest req, boolean isPost) {
+		WebResource res = webClient.resource(target.toExternalForm());
 		WebResource.Builder builder = res.getRequestBuilder();
 
 		// transfer cookies to remote site
@@ -134,6 +182,7 @@ public class DumbProxyServlet extends HttpServlet {
 			}
 		}
 
+		// form encode parameters if POST'ing
 		if( isPost ) {
 			MultivaluedMap<String, String> postParams = new MultivaluedMapImpl();
 			@SuppressWarnings("unchecked")
@@ -153,43 +202,26 @@ public class DumbProxyServlet extends HttpServlet {
 		return builder;
 	}
 
-	// the maximum number of redirects per request
-	protected int maxRedirects = 20;
-
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		this.doGet(req, resp);
-	}
-
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if( DEBUG ) {
-			DebugUtil.dumpRequestInfo(req);
+	/**
+	 * Attempts to send a request to <code>url</code>.  This handles redirects
+	 * (up to <code>maxRedirects</code>) and transerring cookies.
+	 * 
+	 * @param url the URL to request
+	 * @param req the proxy's request
+	 * @return the client response, will not be <code>null</code>
+	 * 
+	 * @throws ServletException if anything goes wrong, such as a bad status from the
+	 *                          remote server, too many redirects, etc
+	 * @throws NullPointerException if either param is <code>null</code>
+	 */
+	protected Pair<ClientResponse, URL> sendRequest(URL url, HttpServletRequest req)
+			throws ServletException {
+		if( url == null ) {
+			throw new NullPointerException("url is null");
 		}
-
-		// read requested URL
-		String urlParam = req.getParameter("url");
-		if( urlParam == null ) {
-			throw new ServletException("No URL");
+		if( req == null ) {
+			throw new NullPointerException("req is null");
 		}
-		if( !hasHost(urlParam) ) {
-			try {
-				urlParam = new URI(req.getRequestURI()).getScheme() + "://" + urlParam;
-			} catch( URISyntaxException e ) {
-				throw new ServletException(e);
-			}
-		}
-		URL url = null;
-		try {
-			url = new URL(urlParam);
-		} catch( MalformedURLException e ) {
-			throw new ServletException("Cannot parse: " + urlParam, e);
-		}
-		if( DEBUG ) {
-			System.out.println("URL=" + url.toExternalForm());
-		}
-
-		String requestURI = req.getRequestURI() + "?url=";
 
 		boolean isPost = "POST".equals(req.getMethod());
 
@@ -197,14 +229,12 @@ public class DumbProxyServlet extends HttpServlet {
 		ClientResponse response = null;
 		int redirects = 0;
 		List<NewCookie> addCookies = Collections.emptyList();
+		// will return or throw exception to terminate the loop
 		while( true ) {
-			// build and send the request
-			try {
-				builder = prepareClientRequest(url, req, isPost);
-			} catch( URISyntaxException e ) {
-				throw new ServletException(e);
-			}
+			// build the request
+			builder = prepareClientRequest(url, req, isPost);
 
+			// add any new cookies from redirect responses
 			for( NewCookie addCookie : addCookies ) {
 				javax.ws.rs.core.Cookie newCookie = new javax.ws.rs.core.Cookie(
 					addCookie.getName(), addCookie.getValue(), addCookie.getPath(),
@@ -216,19 +246,12 @@ public class DumbProxyServlet extends HttpServlet {
 				}
 			}
 
-			if( DEBUG ) {
-				System.out.println((isPost ? "POST" : "GET") + ": " + url.toExternalForm());
-			}
+			// send the request
 			response = isPost ? builder.post(ClientResponse.class) : builder.get(ClientResponse.class);
-
-			//			// redundant with LoggingFilter output
-			//			if( DEBUG ) {
-			//				DebugUtil.dumpClientResponse(response);
-			//			}
 
 			// request succeeded
 			if( ClientResponse.Status.OK.equals(response.getClientResponseStatus()) ) {
-				break;
+				return Pair.makePair(response, url);
 			}
 
 			// request failed
@@ -244,7 +267,12 @@ public class DumbProxyServlet extends HttpServlet {
 			}
 
 			// try again with the new location
-			URL newUrl = location.toURL();
+			URL newUrl;
+			try {
+				newUrl = location.toURL();
+			} catch( MalformedURLException e ) {
+				throw new ServletException("Couldn't parse redirect URI as URL: " + location);
+			}
 			if( newUrl.equals(url) ) {
 				throw new ServletException("Infinite redirect to: " + newUrl.toExternalForm());
 			}
@@ -253,24 +281,67 @@ public class DumbProxyServlet extends HttpServlet {
 			isPost = false; // don't POST again when following redirects
 			addCookies = response.getCookies(); // pass along any new cookies
 
-			if( ++redirects >= maxRedirects ) {
+			if( ++redirects > this.maxRedirects ) {
 				throw new ServletException("Redirect limit exceeded: " + maxRedirects);
 			}
 		}
+	}
 
+	/**
+	 * Reads and parses the <code>url</code> parameter.  Also assigns the
+	 * result to the {@link #ATTR_REMOTE_URL} attribute of <code>req</code>.
+	 * 
+	 * @param req the proxy servlet request
+	 * @return the parsed URL
+	 * @throws ServletException if the <code>url</code> parameter is missing or unparseable
+	 */
+	protected URL getProxiedURL(HttpServletRequest req) throws ServletException {
+		// read requested URL
+		String urlParam = req.getParameter("url");
+		if( urlParam == null ) {
+			throw new ServletException("No URL");
+		}
+
+		// add protocol if not present
+		if( !hasHost(urlParam) ) {
+			try {
+				urlParam = new URI(req.getRequestURI()).getScheme() + "://" + urlParam;
+			} catch( URISyntaxException e ) {
+				throw new ServletException(e);
+			}
+		}
+
+		// now parse
+		try {
+			URL url = new URL(urlParam);
+			if( DEBUG ) {
+				System.out.println("URL=" + url.toExternalForm());
+			}
+			req.setAttribute(ATTR_REMOTE_URL, url);
+			return url;
+		} catch( MalformedURLException e ) {
+			throw new ServletException("Cannot parse: " + urlParam, e);
+		}
+	}
+
+	/**
+	 * Copy cookies from a proxied response into the current servlet response.
+	 * 
+	 * @param response the remote response
+	 * @param localRequest the local proxy servlet request
+	 * @param localResponse the local proxy servlet response
+	 */
+	protected void copyProxiedCookies(ClientResponse response, HttpServletRequest localRequest,
+			HttpServletResponse localResponse) {
 		// translate cookies back to our client
 		List<NewCookie> respCookies = response.getCookies();
 		if( respCookies != null ) {
 			for( NewCookie newCookie : respCookies ) {
-				//				// redundant with LoggingFilter
-				//				if( DEBUG ) {
-				//					DebugUtil.dumpNewCookie(newCookie);
-				//				}
 				try {
 					Cookie clientCookie = new Cookie(newCookie.getName(), newCookie.getValue());
 
 					// FIXME double check this, what about the port?
-					clientCookie.setDomain(req.getLocalName());
+					clientCookie.setDomain(localRequest.getLocalName());
 
 					// FIXME check the path
 					clientCookie.setPath("/");
@@ -280,87 +351,73 @@ public class DumbProxyServlet extends HttpServlet {
 					clientCookie.setComment(newCookie.getComment());
 					clientCookie.setVersion(newCookie.getVersion());
 
-					resp.addCookie(clientCookie);
+					localResponse.addCookie(clientCookie);
 
 					if( DEBUG ) {
 						System.out.println("Added cookie: " + DebugUtil.servletCookieToString(clientCookie));
 					}
 				} catch( IllegalArgumentException e ) {
-					System.err.println("Couldn't transfer cookie.");
-					System.err.println(e.getMessage());
+					// constructor rejects some names, such as date-formatted strings
+					System.err.println("Couldn't transfer cookie: " + e.getMessage());
 				}
 			}
 		}
+	}
 
-		// parse the document
-		String contents = response.getEntity(String.class);
-		Document doc = Jsoup.parse(contents);
+	/**
+	 * {@inheritDoc}
+	 * This implementation rewrites various URLs to either proxy through us or to
+	 * hit the remote server directly.
+	 */
+	@Override
+	protected String process(Document doc, HttpServletRequest req) throws ServletException, IOException {
+		URL url = (URL)req.getAttribute(ATTR_REMOTE_URL);
+		String requestURI = req.getRequestURI() + "?url=";
 
-		// rewrite links to proxy through us
-		StringBuilder rewrites = new StringBuilder("-LINKS:\n");
-		for( Element link : doc.select("a[href]") ) {
-			String href = link.attr("href");
-			String newHref = requestURI +
-					URLEncoder.encode(rewriteDirectResource(url, href), "UTF-8");
-			link.attr("href", newHref);
-			rewrites.append('\'').append(href).append("' => '").append(newHref).append("'\n");
-		}
+		// rewrite elements that need to proxy through us
+		for( Element el : doc.select("a[href], form[action], iframe[src]") ) {
+			String node = el.nodeName();
+			String attr;
+			if( "a".equalsIgnoreCase(node) ) {
+				attr = "href";
+			} else if( "form".equalsIgnoreCase(node) ) {
+				attr = "action";
+			} else if( "iframe".equalsIgnoreCase(node) ) {
+				attr = "src";
+			} else {
+				throw new ServletException("Unexpected node type: " + node);
+			}
 
-		// rewrite forms to post to us
-		rewrites.append("-FORM-ACTIONS:\n");
-		for( Element form : doc.select("form[action]") ) {
-			String action = form.attr("action");
-			String newAction = requestURI + URLEncoder.encode(
-				rewriteDirectResource(url, action), "UTF-8");
-			form.attr("action", newAction);
-			rewrites.append('\'').append(action).append("' => '").append(newAction).append("'\n");
-		}
+			String oldVal = el.attr(attr);
+			String newVal = requestURI + URLEncoder.encode(rewriteDirectResource(url, oldVal), "UTF-8");
+			el.attr(attr, newVal);
 
-		// rewrite iframes to proxy through us
-		rewrites.append("-IFRAMES:\n");
-		for( Element iframe : doc.select("iframe[src]") ) {
-			String src = iframe.attr("src");
-			String newSrc = requestURI + URLEncoder.encode(rewriteDirectResource(url, src), "UTF-8");
-			iframe.attr("src", newSrc);
-			rewrites.append('\'').append(src).append("' => '").append(newSrc).append("'\n");
-		}
-
-		rewrites.append("\n-IMG/SCRIPT:\n");
-		// rewrite images and javascript to request from the original server
-		for( Element img : doc.select("img[src], script[src]") ) {
-			String src = img.attr("src");
-			String newSrc = rewriteDirectResource(url, src);
-			if( !src.equals(newSrc) ) {
-				rewrites.append('\'').append(src).append("' => '").append(newSrc).append("'\n");
-				img.attr("src", newSrc);
+			if( DEBUG ) {
+				System.out.println("Rewrote: '" + oldVal + "' -> '" + newVal + "'");
 			}
 		}
 
-		rewrites.append("\n-CSS:\n");
-		// same thing for CSS
-		for( Element css : doc.select("link[href]") ) {
-			String href = css.attr("href");
-			String newHref = rewriteDirectResource(url, href);
-			if( !href.equals(newHref) ) {
-				rewrites.append('\'').append(href).append("' => '").append(newHref).append("'\n");
-				css.attr("href", newHref);
+		// rewrite elements that should not proxy through us
+		for( Element el : doc.select("img[src], script[src], link[href]") ) {
+			String node = el.nodeName().toLowerCase();
+			String attr;
+			if( "link".equals(node) ) {
+				attr = "href";
+			} else if ( "img".equals(node) || "script".equals(node) ) {
+				attr = "src";
+			} else {
+				throw new ServletException("Unexpected node type: " + node);
+			}
+
+			String oldVal = el.attr(attr);
+			String newVal = rewriteDirectResource(url, oldVal);
+			el.attr(attr, newVal);
+
+			if( DEBUG ) {
+				System.out.println("Rewrote: '" + oldVal + "' -> '" + newVal + "'");
 			}
 		}
 
-		// write out the new contents
-		PrintWriter writer = resp.getWriter();
-		writer.write(doc.toString());
-
-		// Debugging info
-		if( DEBUG ) {
-			writer.write("\n\n<!--\n");
-			writer.write("requestURI: " + req.getRequestURI() + "\n");
-			writer.write("contextPath: " + req.getContextPath() + "\n");
-			writer.write("pathInfo: " + req.getPathInfo() + "\n");
-			writer.write("REWRITES:\n");
-			writer.write(rewrites.toString());
-			writer.write("\n-->\n");
-		}
-		writer.flush();
+		return doc.toString();
 	}
 }
