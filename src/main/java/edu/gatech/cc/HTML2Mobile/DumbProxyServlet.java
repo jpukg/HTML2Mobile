@@ -3,6 +3,8 @@ package edu.gatech.cc.HTML2Mobile;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
@@ -26,9 +28,39 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
+import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
+
+/** Proof of concept proxying servlet. */
 public class DumbProxyServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	private static final boolean DEBUG = true;
+
+	/** Host matching pattern. */
 	private static final Pattern hasHost =
 			Pattern.compile("^(https?:)?//.*", Pattern.CASE_INSENSITIVE);
+
+	/**
+	 * Checks if the given url includes a host part.
+	 * 
+	 * @param url the url to check
+	 * @return <code>true</code> if the URL has a host part
+	 */
+	public static boolean hasHost(String url) {
+		if( url == null ) {
+			throw new NullPointerException("url is null");
+		}
+		return hasHost.matcher(url).matches();
+	}
+
+	/**
+	 * Rewrites a URL to be absolute and with a host.
+	 * 
+	 * @param requestURL the base URL of the request
+	 * @param targetURL  the resource URL to rewrite
+	 * @return the rewritten URL or <code>targetURL</code> if it already includes the host
+	 * @throws MalformedURLException if the rewritten URL is not well-formed
+	 */
 	public static String rewriteDirectResource(URL requestURL, String targetURL)
 			throws MalformedURLException {
 		// no rewrite when the host is included
@@ -38,7 +70,15 @@ public class DumbProxyServlet extends HttpServlet {
 
 		// make relative URLs absolute
 		if( !targetURL.startsWith("/") ) {
-			targetURL = requestURL.getPath() + "/" + targetURL;
+			String path = requestURL.getPath();
+
+			// strip off non-dir part
+			int lastSlash = path.lastIndexOf('/');
+			if( -1 != lastSlash ) {
+				path = path.substring(0, lastSlash);
+			}
+
+			targetURL = path + "/" + targetURL;
 		}
 
 		// now point to the original server
@@ -56,16 +96,30 @@ public class DumbProxyServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		if( DEBUG ) {
+			DebugUtil.dumpRequestInfo(req);
+		}
+
 		// read requested URL
 		String urlParam = req.getParameter("url");
 		if( urlParam == null ) {
 			throw new ServletException("No URL");
+		}
+		if( !hasHost(urlParam) ) {
+			try {
+				urlParam = new URI(req.getRequestURI()).getScheme() + "://" + urlParam;
+			} catch( URISyntaxException e ) {
+				throw new ServletException(e);
+			}
 		}
 		URL url = null;
 		try {
 			url = new URL(urlParam);
 		} catch( MalformedURLException e ) {
 			throw new ServletException("Cannot parse: " + urlParam, e);
+		}
+		if( DEBUG ) {
+			System.out.println("URL=" + url.toExternalForm());
 		}
 
 		String requestURI = req.getRequestURI() + "?url=";
@@ -79,7 +133,7 @@ public class DumbProxyServlet extends HttpServlet {
 		Cookie[] cookies = req.getCookies();
 		if( cookies != null ) {
 			for( Cookie cookie : req.getCookies() ) {
-				dumpServletCookie(cookie);
+				DebugUtil.dumpServletCookie(cookie);
 				// FIXME translate the path
 				javax.ws.rs.core.Cookie newCookie = new javax.ws.rs.core.Cookie(
 					cookie.getName(), cookie.getValue(), cookie.getPath(), url.getHost());
@@ -108,6 +162,10 @@ public class DumbProxyServlet extends HttpServlet {
 			response = builder.get(ClientResponse.class);
 		}
 
+		if( DEBUG ) {
+			DebugUtil.dumpClientResponse(response);
+		}
+
 		//		ClientResponse response = builder.get(ClientResponse.class);
 		if(!ClientResponse.Status.OK.equals(response.getClientResponseStatus()) ) {
 			throw new ServletException("Server responded with: " + response.getStatus());
@@ -118,7 +176,9 @@ public class DumbProxyServlet extends HttpServlet {
 		List<NewCookie> respCookies = response.getCookies();
 		if( respCookies != null ) {
 			for( NewCookie newCookie : respCookies ) {
-				dumpNewCookie(newCookie);
+				if( DEBUG ) {
+					DebugUtil.dumpNewCookie(newCookie);
+				}
 				try {
 					Cookie clientCookie = new Cookie(newCookie.getName(), newCookie.getValue());
 
@@ -133,8 +193,10 @@ public class DumbProxyServlet extends HttpServlet {
 
 					resp.addCookie(clientCookie);
 
-					System.out.println("Added cookie:");
-					dumpServletCookie(clientCookie);
+					if( DEBUG ) {
+						System.out.println("Added cookie:");
+						DebugUtil.dumpServletCookie(clientCookie);
+					}
 				} catch( IllegalArgumentException e ) {
 					System.err.println("Couldn't transfer cookie.");
 					System.err.println(e.getMessage());
@@ -150,29 +212,21 @@ public class DumbProxyServlet extends HttpServlet {
 		// rewrite links to proxy through us
 		StringBuilder rewrites = new StringBuilder("-LINKS:\n");
 		for( Element link : doc.select("a[href]") ) {
-			String href = link.attr("href"),
-					newHref = href;
-			if( !hasHost.matcher(href).matches() ) {
-				newHref =
-						new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getPath() + "/" + href).toExternalForm();
-			}
-			newHref = requestURI + URLEncoder.encode(newHref, "UTF-8");
-			rewrites.append('\'').append(href).append("' => '").append(newHref).append("'\n");
+			String href = link.attr("href");
+			String newHref = requestURI +
+					URLEncoder.encode(rewriteDirectResource(url, href), "UTF-8");
 			link.attr("href", newHref);
+			rewrites.append('\'').append(href).append("' => '").append(newHref).append("'\n");
 		}
 
 		// rewrite forms to post to us
 		rewrites.append("-FORM-ACTIONS:\n");
 		for( Element form : doc.select("form[action]") ) {
 			String action = form.attr("action");
-			String newAction = action;
-			if( !hasHost.matcher(action).matches() ) {
-				newAction = new URL(
-					url.getProtocol(), url.getHost(), url.getPort(), url.getPath() + "/" + action).toExternalForm();
-			}
-			newAction = requestURI + URLEncoder.encode(newAction, "UTF-8");
-			rewrites.append('\'').append(action).append("' => '").append(newAction).append("'\n");
+			String newAction = requestURI + URLEncoder.encode(
+				rewriteDirectResource(url, action), "UTF-8");
 			form.attr("action", newAction);
+			rewrites.append('\'').append(action).append("' => '").append(newAction).append("'\n");
 		}
 
 		rewrites.append("\n-IMG/SCRIPT:\n");
@@ -212,17 +266,5 @@ public class DumbProxyServlet extends HttpServlet {
 		writer.flush();
 
 		isPost = false;
-	}
-
-	private static void dumpServletCookie(Cookie cookie) {
-		System.out.println("Cookie: name=" + cookie.getName() + ", value=" + cookie.getValue() +
-			", domain=" + cookie.getDomain() + ", path=" + cookie.getPath() + ", comment=" + cookie.getComment() +
-			", maxage=" + cookie.getMaxAge() + ", version=" + cookie.getVersion() + ", secure=" + cookie.getSecure());
-	}
-
-	private static void dumpNewCookie(NewCookie newCookie) {
-		System.out.println("NewCookie: name=" + newCookie.getName() + ", value=" + newCookie.getValue() +
-			", domain=" + newCookie.getDomain() + ", path=" + newCookie.getPath() + ", comment=" + newCookie.getComment() +
-			", maxage=" + newCookie.getMaxAge() + ", version=" + newCookie.getVersion() + ", secure=" + newCookie.isSecure());
 	}
 }
