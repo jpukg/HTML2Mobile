@@ -154,7 +154,7 @@ public class DumbProxyServlet extends HttpServlet {
 	}
 
 	// the maximum number of redirects per request
-	protected int maxRedirects = 5;
+	protected int maxRedirects = 20;
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -262,9 +262,10 @@ public class DumbProxyServlet extends HttpServlet {
 		List<NewCookie> respCookies = response.getCookies();
 		if( respCookies != null ) {
 			for( NewCookie newCookie : respCookies ) {
-				if( DEBUG ) {
-					DebugUtil.dumpNewCookie(newCookie);
-				}
+				//				// redundant with LoggingFilter
+				//				if( DEBUG ) {
+				//					DebugUtil.dumpNewCookie(newCookie);
+				//				}
 				try {
 					Cookie clientCookie = new Cookie(newCookie.getName(), newCookie.getValue());
 
@@ -313,6 +314,15 @@ public class DumbProxyServlet extends HttpServlet {
 				rewriteDirectResource(url, action), "UTF-8");
 			form.attr("action", newAction);
 			rewrites.append('\'').append(action).append("' => '").append(newAction).append("'\n");
+		}
+
+		// rewrite iframes to proxy through us
+		rewrites.append("-IFRAMES:\n");
+		for( Element iframe : doc.select("iframe[src]") ) {
+			String src = iframe.attr("src");
+			String newSrc = requestURI + URLEncoder.encode(rewriteDirectResource(url, src), "UTF-8");
+			iframe.attr("src", newSrc);
+			rewrites.append('\'').append(src).append("' => '").append(newSrc).append("'\n");
 		}
 
 		rewrites.append("\n-IMG/SCRIPT:\n");
