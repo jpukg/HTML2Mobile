@@ -1,3 +1,4 @@
+package edu.gatech.cc.HTML2Mobile.helper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +23,11 @@ public class POC {
 		headers.put("Pragma", "no-cache");
 	}
 
-	private void handleHeaderCookies(Response response) {
+	private void handleHeaderCookies(Connection connection) {
 
-		if (response != null && response.getReq() != null && response.getReq().cookies() != null) {
+		if (connection != null && connection.request() != null && connection.request().cookies() != null) {
 			StringBuilder sb = new StringBuilder();
-			for (Entry<String, String> cookie : response.getReq().cookies().entrySet()) {
+			for (Entry<String, String> cookie : connection.request().cookies().entrySet()) {
 				sb.append(cookie.getKey()).append("=").append(cookie.getValue()).append("; ");
 			}
 			if (sb.length() > 0) {
@@ -58,9 +59,10 @@ public class POC {
 			}
 		}
 		Response response = connection.execute();
+
 		cookies.putAll(response.cookies());
 		if (updateHeaderCookies) {
-			handleHeaderCookies(response);
+			handleHeaderCookies(connection);
 		}
 		//	    headers.putAll(response.headers());
 		return response.parse();
