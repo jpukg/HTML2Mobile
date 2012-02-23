@@ -165,14 +165,10 @@ public class DumbProxyServlet extends HttpServlet {
 		rewrites.append("-FORM-ACTIONS:\n");
 		for( Element form : doc.select("form[action]") ) {
 			String action = form.attr("action");
-			String newAction;
+			String newAction = action;
 			if( !hasHost.matcher(action).matches() ) {
 				newAction = new URL(
 					url.getProtocol(), url.getHost(), url.getPort(), url.getPath() + "/" + action).toExternalForm();
-			} else {
-				// preserve prefix for relative paths
-				newAction = urlParam + "/" + action;
-				System.out.println("urlParam: " + urlParam);
 			}
 			newAction = requestURI + URLEncoder.encode(newAction, "UTF-8");
 			rewrites.append('\'').append(action).append("' => '").append(newAction).append("'\n");
