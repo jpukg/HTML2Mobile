@@ -341,7 +341,8 @@ public class DumbProxyServlet extends JSoupServlet {
 					Cookie clientCookie = new Cookie(newCookie.getName(), newCookie.getValue());
 
 					// FIXME double check this, what about the port?
-					clientCookie.setDomain(localRequest.getLocalName());
+					String domain = localRequest.getServerName();
+					clientCookie.setDomain(domain);
 
 					// FIXME check the path
 					clientCookie.setPath("/");
