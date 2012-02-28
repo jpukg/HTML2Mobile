@@ -34,7 +34,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>IFrame_Parsing</servlet-name>
-		<url-pattern>/iframe_parsing</url-pattern>
+		<url-pattern>/iframeparser</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>HTML2Mobile</servlet-name>
