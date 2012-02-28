@@ -18,7 +18,7 @@ public class FormParserServlet extends JSoupServlet {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected String process(Document doc, HttpServletRequest req)
+	public String process(Document doc, HttpServletRequest req)
 			throws ServletException, IOException {
 		StringBuilder sb = new StringBuilder();
 		Elements forms = doc.select("form");

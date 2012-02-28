@@ -3,6 +3,7 @@ package edu.gatech.cc.HTML2Mobile.Parser;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 
 public class LinkGroup {
@@ -62,12 +63,23 @@ public class LinkGroup {
 		if (links.size() >= LinkParserServlet.MIN_GROUP_SIZE) {
 			sb.append("\t<linkgroup>\n");
 			for (Element a : links) {
-				sb.append("\t\t<link><![CDATA[").append(a.toString())
-				.append("]]></link>\n");
+
+				sb.append("\t\t<link>\n");
+
+				sb.append("\t\t\t<text>"+a.ownText()+"</text>\n");
+				for(Attribute attrib : a.attributes()) {
+					if(!attrib.getValue().isEmpty()) {
+						sb.append("\t\t\t<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");
+					}
+				}
+				sb.append("\t\t</link>\n");
+				//sb.append("\t\t<link><![CDATA[").append(a.toString()).append("]]></link>\n");
 			}
-			sb.append("\t</linkgroup>");
+			sb.append("\t</linkgroup>\n");
 		}
 		return sb.toString();
+
+
 	}
 
 	@Override

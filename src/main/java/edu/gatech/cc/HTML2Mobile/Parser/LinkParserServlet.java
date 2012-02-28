@@ -1,16 +1,12 @@
 package edu.gatech.cc.HTML2Mobile.Parser;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -24,25 +20,6 @@ public class LinkParserServlet extends JSoupServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		// read requested URL
-		String urlParam = req.getParameter("url");
-		if( urlParam == null ) {
-			throw new ServletException("No URL");
-		}
-		URL url = null;
-		try {
-			url = new URL(urlParam);
-		} catch( MalformedURLException e ) {
-			throw new ServletException("Cannot parse: " + urlParam, e);
-		}
-
-		Document doc = Jsoup.parse(url, 1000);
-		resp.getWriter().println(process(doc, req));
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see edu.gatech.cc.HTML2Mobile.JSoupServlet#process(org.jsoup.nodes.Document, javax.servlet.http.HttpServletRequest)
@@ -51,7 +28,7 @@ public class LinkParserServlet extends JSoupServlet {
 	 * get variables to define session/user info?
 	 */
 	@Override
-	protected String process(Document doc, HttpServletRequest req)
+	public String process(Document doc, HttpServletRequest req)
 			throws ServletException, IOException {
 		Map<Element, LinkGroup> parents = new HashMap<Element, LinkGroup>();
 		Elements eles = doc.select("a");
@@ -94,9 +71,9 @@ public class LinkParserServlet extends JSoupServlet {
 		}
 		StringBuilder sb = new StringBuilder("<links>\n");
 		for (LinkGroup g : parents.values()) {
-			sb.append(g.toXmlString()).append("\n");
+			sb.append(g.toXmlString());
 		}
-		return sb.append("</links>").toString();
+		return sb.append("</links>\n").toString();
 	}
 
 }

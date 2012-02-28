@@ -370,7 +370,7 @@ public class DumbProxyServlet extends JSoupServlet {
 	 * hit the remote server directly.
 	 */
 	@Override
-	protected String process(Document doc, HttpServletRequest req) throws ServletException, IOException {
+	public String process(Document doc, HttpServletRequest req) throws ServletException, IOException {
 		URL url = (URL)req.getAttribute(ATTR_REMOTE_URL);
 		String requestURI = req.getRequestURI() + "?url=";
 

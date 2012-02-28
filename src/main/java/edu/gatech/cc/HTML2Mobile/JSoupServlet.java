@@ -49,6 +49,6 @@ public abstract class JSoupServlet extends HttpServlet {
 		writer.write("</pre></body></html>");
 	}
 
-	protected abstract String process(Document doc, HttpServletRequest req)
+	public abstract String process(Document doc, HttpServletRequest req)
 			throws ServletException, IOException;
 }

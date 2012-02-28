@@ -51,14 +51,14 @@ public class FormObj {
 
 	public String toHtml2Mobile_2() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("<html2mobile_form>\n\t");
+		sb.append("<form>\n\t");
 		sb.append(name == null?"" : "\t<name>"+name+"</name>\n\t");
 		sb.append("<action><![CDATA[").append(action).append("]]></action>\n\t");
 		sb.append("<method><![CDATA[").append(method).append("]]></method>\n\t");
 		sb.append("\t\t<code>").append("\n");
 		sb.append("\t<![CDATA[\n");
 		sb.append(html);
-		sb.append("\n\t\t]]>\n\t</code>");
-		return sb.append("</html2mobile_form>").toString();
+		sb.append("\n\t\t]]>\n\t</code>\n");
+		return sb.append("</form>\n").toString();
 	}
 }

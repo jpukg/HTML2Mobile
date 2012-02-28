@@ -16,15 +16,15 @@ import edu.gatech.cc.HTML2Mobile.JSoupServlet;
 public class MediaServlet extends JSoupServlet {
 
 	@Override
-	protected String process(Document doc, HttpServletRequest req)
+	public String process(Document doc, HttpServletRequest req)
 			throws ServletException, IOException {
 		StringBuilder toRet = new StringBuilder("<media>\n");
 
 		// Grab Pictures
 		for(Element media : doc.select("img[src]")) {
-			toRet.append("<picture>\n");
+			toRet.append("\t<picture>\n");
 			toRet.append(printAttributes(media.attributes()));
-			toRet.append("</picture>\n");
+			toRet.append("\t</picture>\n");
 		}
 
 		/*
@@ -36,33 +36,33 @@ public class MediaServlet extends JSoupServlet {
 		 */
 		// Grab Videos(HTML5)
 		for(Element media : doc.select("video")) {
-			toRet.append("<video type='html5'>\n");
+			toRet.append("\t<video type='html5'>\n");
 			toRet.append(printAttributes(media.attributes()));
 			for(Element source : media.children()) {
-				toRet.append("<").append(source.tagName()).append(">\n");
+				toRet.append("\t\t<").append(source.tagName()).append(">\n");
 				toRet.append(printAttributes(source.attributes()));
 				toRet.append("</").append(source.tagName()).append(">\n");
 			}
-			toRet.append("</video>\n");
+			toRet.append("\t</video>\n");
 		}
 
 		// Grab Videos(Youtube)
 		for(Element media : doc.select("embed[src*=http://www.youtube.com], iframe[src*=http://www.youtube.com]")) {
-			toRet.append("<video type='youtube'>\n");
+			toRet.append("\t<video type='youtube'>\n");
 			toRet.append(printAttributes(media.attributes()));
-			toRet.append("</video>\n");
+			toRet.append("\t</video>\n");
 		}
 
 		// Grab Audio(HTML5)
 		for(Element media : doc.select("audio")) {
-			toRet.append("<audio>\n");
+			toRet.append("\t<audio>\n");
 			toRet.append(printAttributes(media.attributes()));
 			for(Element source : media.children()) {
-				toRet.append("<" + source.tagName() + ">\n");
+				toRet.append("\t\t<" + source.tagName() + ">\n");
 				toRet.append(printAttributes(source.attributes()));
-				toRet.append("</" + source.tagName() + ">\n");
+				toRet.append("\t\t</" + source.tagName() + ">\n");
 			}
-			toRet.append("</audio>\n");
+			toRet.append("\t</audio>\n");
 		}
 
 		toRet.append("</media>\n");
@@ -73,7 +73,7 @@ public class MediaServlet extends JSoupServlet {
 		StringBuilder toRet = new StringBuilder();
 		for(Attribute attrib : attribs) {
 			if(!attrib.getValue().isEmpty()) {
-				toRet.append("<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");
+				toRet.append("\t\t<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");
 			}
 		}
 		return toRet.toString();
