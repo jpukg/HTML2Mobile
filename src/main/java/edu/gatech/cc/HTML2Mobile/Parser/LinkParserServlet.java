@@ -35,6 +35,9 @@ public class LinkParserServlet extends JSoupServlet {
 
 		// Look at the appropriate parent of each "a" tag
 		for (Element a : eles) {
+			if (a.html().length() == 0) {
+				continue;
+			}
 			Element parent = a.parent();
 
 			if (parent.tagName().equals("li")) {
@@ -69,11 +72,16 @@ public class LinkParserServlet extends JSoupServlet {
 				}
 			}
 		}
-		StringBuilder sb = new StringBuilder("<links>\n");
+		StringBuilder sb = new StringBuilder();
+		int count = 0;
 		for (LinkGroup g : parents.values()) {
-			sb.append(g.toXmlString());
+			if (g.valid()) {
+				sb.append(g.toXmlString());
+				count++;
+			}
 		}
-		return sb.append("</links>\n").toString();
+		StringBuilder sb2 = new StringBuilder("<links><count>").append(count).append("</count>\n");
+		return sb2.append(sb.toString()).append("</links>\n").toString();
 	}
 
 }

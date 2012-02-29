@@ -9,6 +9,7 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import edu.gatech.cc.HTML2Mobile.JSoupServlet;
 
@@ -21,11 +22,14 @@ public class MediaServlet extends JSoupServlet {
 		StringBuilder toRet = new StringBuilder("<media>\n");
 
 		// Grab Pictures
-		for(Element media : doc.select("img[src]")) {
-			toRet.append("\t<picture>\n");
+		Elements imgs = doc.select("img[src]");
+		toRet.append("\t<pictures><count>").append(imgs.size()).append("</count>\n");
+		for(Element media : imgs) {
+			toRet.append("\t\t<picture>\n");
 			toRet.append(printAttributes(media.attributes()));
-			toRet.append("\t</picture>\n");
+			toRet.append("\t\t</picture>\n");
 		}
+		toRet.append("\t</pictures>\n");
 
 		/*
 		 * Do we want to support embedded youtube videos as well? (Flash)
@@ -35,35 +39,43 @@ public class MediaServlet extends JSoupServlet {
 		 * http://www.youtube.com/embed/kPdYpST_yoE?version=3&amp;rel=1&amp;fs=1&amp;showsearch=0&amp;showinfo=1&amp;iv_load_policy=1&amp;wmode=transparent
 		 */
 		// Grab Videos(HTML5)
-		for(Element media : doc.select("video")) {
-			toRet.append("\t<video type='html5'>\n");
+		Elements vids = doc.select("video");
+		Elements youtubeVids = doc.select("embed[src*=http://www.youtube.com], iframe[src*=http://www.youtube.com]");
+		toRet.append("\t<videos><count>").append(vids.size() + youtubeVids.size()).append("</count>\n");
+		for(Element media : vids) {
+			toRet.append("\t\t<video type='html5'>\n");
 			toRet.append(printAttributes(media.attributes()));
 			for(Element source : media.children()) {
-				toRet.append("\t\t<").append(source.tagName()).append(">\n");
+				toRet.append("\t\t\t<").append(source.tagName()).append(">\n");
 				toRet.append(printAttributes(source.attributes()));
 				toRet.append("</").append(source.tagName()).append(">\n");
 			}
-			toRet.append("\t</video>\n");
+			toRet.append("\t\t</video>\n");
 		}
 
 		// Grab Videos(Youtube)
-		for(Element media : doc.select("embed[src*=http://www.youtube.com], iframe[src*=http://www.youtube.com]")) {
-			toRet.append("\t<video type='youtube'>\n");
+		for(Element media : youtubeVids) {
+			toRet.append("\t\t<video type='youtube'>\n");
 			toRet.append(printAttributes(media.attributes()));
 			toRet.append("\t</video>\n");
 		}
 
+		toRet.append("\t</videos>\n");
+
 		// Grab Audio(HTML5)
-		for(Element media : doc.select("audio")) {
-			toRet.append("\t<audio>\n");
+		Elements aud = doc.select("audio");
+		toRet.append("\t<audios><count>").append(aud.size()).append("</count>\n");
+		for(Element media : aud) {
+			toRet.append("\t\t<audio>\n");
 			toRet.append(printAttributes(media.attributes()));
 			for(Element source : media.children()) {
-				toRet.append("\t\t<" + source.tagName() + ">\n");
+				toRet.append("\t\t\t<" + source.tagName() + ">\n");
 				toRet.append(printAttributes(source.attributes()));
-				toRet.append("\t\t</" + source.tagName() + ">\n");
+				toRet.append("\t\t\t</" + source.tagName() + ">\n");
 			}
-			toRet.append("\t</audio>\n");
+			toRet.append("\t\t</audios>\n");
 		}
+		toRet.append("\t</audios>\n");
 
 		toRet.append("</media>\n");
 		return toRet.toString();

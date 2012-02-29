@@ -20,6 +20,10 @@ public class LinkGroup {
 	private LinkGroupFormats format;
 	private int creationId;
 
+	public boolean valid() {
+		return links.size() >= LinkParserServlet.MIN_GROUP_SIZE;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -53,20 +57,20 @@ public class LinkGroup {
 	}
 
 	public void add(Element link) {
-		if (link != null) {
+		if (link != null && link.html().length() > 0) {
 			links.add(link);
 		}
 	}
 
 	public String toXmlString() {
 		StringBuilder sb = new StringBuilder();
-		if (links.size() >= LinkParserServlet.MIN_GROUP_SIZE) {
-			sb.append("\t<linkgroup>\n");
+		if (valid()) {
+			sb.append("\t<linkgroup><count>").append(links.size()).append("</count>\n");
 			for (Element a : links) {
 
 				sb.append("\t\t<link>\n");
 
-				sb.append("\t\t\t<text>"+a.ownText()+"</text>\n");
+				sb.append("\t\t\t<text>"+a.html()+"</text>\n");
 				for(Attribute attrib : a.attributes()) {
 					if(!attrib.getValue().isEmpty()) {
 						sb.append("\t\t\t<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");

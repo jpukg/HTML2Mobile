@@ -1,82 +1,236 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="html2mobile_1.xsl"?>
 <!-- Edited by XMLSpyÂ® -->
-<html2mobile>
-   <requestinfo>
-   </requestinfo>
-   <document>
-      <links>
-         <navigation>
-            <!--
-            <text>...</text>
-            <link>...</link>
-            -->
-         </navigation>
-         <sitemap>
-            <!--
-            <text>...</text>
-            <link>...</link>
-            -->
-         </sitemap>
-         <embedded>
-            <!--
-            <text>...</text>
-            <link>...</link>
-            -->
-         </embedded>
-      </links>
-      <content>
-         <main>
-            <!--
-            <summary>
-			   ...
-            </summary>
-            <fulltext>
-			   ...
-            </fulltext>
-            -->
-         </main>
-         <form>
-            <!--
-            <code>
-               ...
-            </code>
-            -->
-         </form>
-         <notes>
-            <!--
-            <summary>
-			   ...
-            </summary>
-            <fulltext>
-			   ...
-            </fulltext>
-            -->
-         </notes>
-      </content>
+<html2mobile><document>
+<links>
+	<linkgroup>
+		<link>
+			<text></text>
+			<onclick>gbar.logger.il(1,{t:1});</onclick>
+			<class>gbzt gbz0l gbp1</class>
+			<id>gb_1</id>
+			<href>http://www.google.com/webhp?hl=en&tab=ww</href>
+		</link>
+		<link>
+			<text></text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:2});</onclick>
+			<class>gbzt</class>
+			<id>gb_2</id>
+			<href>http://www.google.com/imghp?hl=en&tab=wi</href>
+		</link>
+		<link>
+			<text></text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:12});</onclick>
+			<class>gbzt</class>
+			<id>gb_12</id>
+			<href>http://video.google.com/?hl=en&tab=wv</href>
+		</link>
+		<link>
+			<text></text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:8});</onclick>
+			<class>gbzt</class>
+			<id>gb_8</id>
+			<href>http://maps.google.com/maps?hl=en&tab=wl</href>
+		</link>
+		<link>
+			<text></text>
+			<onclick>gbar.logger.il(1,{t:5});</onclick>
+			<class>gbzt</class>
+			<id>gb_5</id>
+			<href>http://news.google.com/nwshp?hl=en&tab=wn</href>
+		</link>
+		<link>
+			<text></text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:6});</onclick>
+			<class>gbzt</class>
+			<id>gb_6</id>
+			<href>http://www.google.com/shopping?hl=en&tab=wf</href>
+		</link>
+		<link>
+			<text></text>
+			<onclick>gbar.logger.il(1,{t:23});</onclick>
+			<class>gbzt</class>
+			<id>gb_23</id>
+			<href>https://mail.google.com/mail/?tab=wm</href>
+		</link>
+		<link>
+			<text></text>
+			<class>gbgt</class>
+			<id>gbztm</id>
+			<href>http://www.google.com/intl/en/options/</href>
+			<onclick>gbar.tg(event,this)</onclick>
+			<aria-haspopup>true</aria-haspopup>
+			<aria-owns>gbd</aria-owns>
+		</link>
+	</linkgroup>
+	<linkgroup>
+		<link>
+			<text>Advertising Programs</text>
+			<href>/intl/en/ads/</href>
+		</link>
+		<link>
+			<text>Business Solutions</text>
+			<href>/services/</href>
+		</link>
+		<link>
+			<text>+Google</text>
+			<href>https://plus.google.com/116899029375914044550</href>
+			<rel>publisher</rel>
+		</link>
+		<link>
+			<text>About Google</text>
+			<href>/intl/en/about.html</href>
+		</link>
+	</linkgroup>
+	<linkgroup>
+		<link>
+			<text>Translate</text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:51});</onclick>
+			<class>gbmt</class>
+			<id>gb_51</id>
+			<href>http://translate.google.com/?hl=en&tab=wT</href>
+		</link>
+		<link>
+			<text>Books</text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:10});</onclick>
+			<class>gbmt</class>
+			<id>gb_10</id>
+			<href>http://books.google.com/bkshp?hl=en&tab=wp</href>
+		</link>
+		<link>
+			<text>Finance</text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:27});</onclick>
+			<class>gbmt</class>
+			<id>gb_27</id>
+			<href>http://www.google.com/finance?tab=we</href>
+		</link>
+		<link>
+			<text>Scholar</text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:9});</onclick>
+			<class>gbmt</class>
+			<id>gb_9</id>
+			<href>http://scholar.google.com/schhp?hl=en&tab=ws</href>
+		</link>
+		<link>
+			<text>Blogs</text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:13});</onclick>
+			<class>gbmt</class>
+			<id>gb_13</id>
+			<href>http://www.google.com/blogsearch?hl=en&tab=wb</href>
+		</link>
+		<link>
+			<text>YouTube</text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:36});</onclick>
+			<class>gbmt</class>
+			<id>gb_36</id>
+			<href>http://www.youtube.com/?tab=w1</href>
+		</link>
+		<link>
+			<text>Calendar</text>
+			<onclick>gbar.logger.il(1,{t:24});</onclick>
+			<class>gbmt</class>
+			<id>gb_24</id>
+			<href>https://www.google.com/calendar?tab=wc</href>
+		</link>
+		<link>
+			<text>Photos</text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:31});</onclick>
+			<class>gbmt</class>
+			<id>gb_31</id>
+			<href>http://picasaweb.google.com/home?hl=en&tab=wq</href>
+		</link>
+		<link>
+			<text>Documents</text>
+			<onclick>gbar.logger.il(1,{t:25});</onclick>
+			<class>gbmt</class>
+			<id>gb_25</id>
+			<href>https://docs.google.com/?tab=wo</href>
+		</link>
+		<link>
+			<text>Sites</text>
+			<onclick>gbar.logger.il(1,{t:38});</onclick>
+			<class>gbmt</class>
+			<id>gb_38</id>
+			<href>https://sites.google.com/?tab=w3</href>
+		</link>
+		<link>
+			<text>Groups</text>
+			<onclick>gbar.qs(this);gbar.logger.il(1,{t:3});</onclick>
+			<class>gbmt</class>
+			<id>gb_3</id>
+			<href>http://groups.google.com/grphp?hl=en&tab=wg</href>
+		</link>
+		<link>
+			<text>Reader</text>
+			<onclick>gbar.logger.il(1,{t:32});</onclick>
+			<class>gbmt</class>
+			<id>gb_32</id>
+			<href>http://www.google.com/reader/?hl=en&tab=wy</href>
+		</link>
+		<link>
+			<text>Even more »</text>
+			<onclick>gbar.logger.il(1,{t:66});</onclick>
+			<href>http://www.google.com/intl/en/options/</href>
+			<class>gbmt</class>
+		</link>
+	</linkgroup>
+	<linkgroup>
+		<link>
+			<text>Search settings</text>
+			<class>gbmt</class>
+			<href>/preferences?hl=en</href>
+		</link>
+		<link>
+			<text>iGoogle</text>
+			<class>gbmt</class>
+			<href>/url?sa=p&pref=ig&pval=3&q=http://www.google.com/ig%3Fhl%3Den%26source%3Diglk&usg=AFQjCNFA18XPfgb7dKnXfKz7x7g1GDH1tg</href>
+		</link>
+		<link>
+			<text>Web History</text>
+			<class>gbmt</class>
+			<href>http://www.google.com/history/optout?hl=en</href>
+		</link>
+	</linkgroup>
+</links>
+<media>
+	<picture>
+		<alt>Gioachino Rossini's 220th Birthday / Leap Year</alt>
+		<title>Gioachino Rossini's 220th Birthday / Leap Year</title>
+		<border>0</border>
+		<height>200</height>
+		<src>/logos/2012/rossini12-hp.jpg</src>
+		<width>474</width>
+		<id>hplogo</id>
+		<onload>window.lol&&lol()</onload>
+	</picture>
+</media>
+<form>
+		<name>f</name>
+	<action><![CDATA[/search]]></action>
+	<method><![CDATA[]]></method>
+			<code>
+	<![CDATA[
+<table cellpadding="0" cellspacing="0">
+ <tbody>
+  <tr valign="top">
+   <td width="25%"> </td>
+   <td align="center" nowrap=""><input name="hl" type="hidden" value="en" /><input name="source" type="hidden" value="hp" /><input type="hidden" name="ie" value="ISO-8859-1" />
+    <div class="ds" style="height:32px;margin:4px 0">
+     <input autocomplete="off" maxlength="2048" name="q" class="lst" title="Google Search" value="" size="57" style="background:#fff;border:1px solid #ccc;border-bottom-color:#999;border-right-color:#999;color:#000;margin:0;padding:5px 8px 0 6px;vertical-align:top" />
+    </div><br style="line-height:0" /><span class="ds"><span class="lsbb"><input name="btnG" type="submit" value="Google Search" class="lsb" /></span></span><span class="ds"><span class="lsbb"><input name="btnI" type="submit" class="lsb" value="I'm Feeling Lucky" /></span></span></td>
+   <td nowrap="" width="25%" align="left" class="fl sblc"><a href="/advanced_search?hl=en">Advanced search</a><a href="/language_tools?hl=en">Language tools</a></td>
+  </tr>
+ </tbody>
+</table>
+<input type="hidden" id="gbv" name="gbv" value="1" />
+<script><!--
+function g(a){var b="undefined",c="1";if(a&&a.getElementById)if(typeof XMLHttpRequest!=b)c="2";else if(typeof ActiveXObject!=b){var f,d,e="MSXML2.XMLHTTP",h=[e+".6.0",e+".3.0",e,"Microsoft.XMLHTTP"];for(f=0,d;d=h[f++];)try{new ActiveXObject(d);c="2"}catch(i){}}return c};window.updateFormGBV=function(a){var b=g(a);if(b=="2")a.getElementById("gbv").value=b};
+updateFormGBV(document);//-->
 
-      <tables>         
-      </tables>
+</script>
+		]]>
+	</code>
+</form>
 
-      <media>
-         <picture>
-            <!--
-            <alt>...</alt>
-            <src>...</src>
-            -->
-         </picture>
-         <video>
-            <!--
-            <alt>...</alt>
-            <src>...</src>
-            -->
-         </video>
-         <audio>
-            <!--
-            <alt>...</alt>
-            <src>...</src>
-            -->
-         </audio>
-      </media>
-   </document>
-</html2mobile>
+
+</document></html2mobile>

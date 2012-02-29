@@ -22,10 +22,11 @@ public class FormParserServlet extends JSoupServlet {
 			throws ServletException, IOException {
 		StringBuilder sb = new StringBuilder();
 		Elements forms = doc.select("form");
+		sb.append("<forms><count>").append(forms.size()).append("</count>\n");
 		for (Element e : forms) {
 			FormObj fobj = new FormObj(e);
-			sb.append(fobj.toHtml2Mobile_2()).append("\n");
+			sb.append("\t").append(fobj.toHtml2Mobile_2()).append("\n");
 		}
-		return sb.toString();
+		return sb.append("</forms>").toString();
 	}
 }
