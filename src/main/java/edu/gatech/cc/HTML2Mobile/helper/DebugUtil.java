@@ -6,6 +6,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -96,9 +97,18 @@ public class DebugUtil {
 			System.out.println("  " + header + ": " + req.getHeader(header));
 		}
 
+		Pattern isPass = Pattern.compile(".*pass(wo?r?d)?.*", Pattern.CASE_INSENSITIVE);
 		System.out.println("params=");
 		for( Map.Entry<String, String[]> entry : (Set<Map.Entry>)req.getParameterMap().entrySet() ) {
-			System.out.println("  " + entry.getKey() + "=" + Arrays.toString(entry.getValue()));
+			String key = entry.getKey();
+			String value;
+			// try to avoid logging obvious passwords
+			if( isPass.matcher(key).matches() ) {
+				value = "***HIDDEN***";
+			} else {
+				value = Arrays.toString(entry.getValue());
+			}
+			System.out.println("  " + key + "=" + value);
 		}
 	}
 
