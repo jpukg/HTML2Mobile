@@ -39,8 +39,11 @@ public class DumbProxyServlet extends JSoupServlet {
 	// Static fields and methods
 	private static final long serialVersionUID = 1L;
 
-	/** Compile-time constant for loging debug info. */
+	/** Compile-time constant for logging debug info. */
 	private static final boolean DEBUG = true;
+
+	/** Constant for logging URL rewrites, separate from DEBUG. */
+	private static final boolean DEBUG_REWRITES = false;
 
 	/** Attribute name where the remote URL will be stored. */
 	protected static final String ATTR_REMOTE_URL = "proxyURL";
@@ -393,7 +396,7 @@ public class DumbProxyServlet extends JSoupServlet {
 			String newVal = requestURI + URLEncoder.encode(rewriteDirectResource(url, oldVal), "UTF-8");
 			el.attr(attr, newVal);
 
-			if( DEBUG ) {
+			if( DEBUG_REWRITES ) {
 				System.out.println("Rewrote: '" + oldVal + "' -> '" + newVal + "'");
 			}
 		}
@@ -414,7 +417,7 @@ public class DumbProxyServlet extends JSoupServlet {
 			String newVal = rewriteDirectResource(url, oldVal);
 			el.attr(attr, newVal);
 
-			if( DEBUG ) {
+			if( DEBUG_REWRITES ) {
 				System.out.println("Rewrote: '" + oldVal + "' -> '" + newVal + "'");
 			}
 		}
