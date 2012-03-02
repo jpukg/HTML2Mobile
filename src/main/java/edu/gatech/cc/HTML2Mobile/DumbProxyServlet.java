@@ -2,34 +2,46 @@ package edu.gatech.cc.HTML2Mobile;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 
+import org.joda.time.DateTime;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
+import edu.gatech.cc.HTML2Mobile.helper.CookieDelegate;
+import edu.gatech.cc.HTML2Mobile.helper.CookieProxy;
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
 import edu.gatech.cc.HTML2Mobile.helper.Pair;
 
@@ -48,16 +60,107 @@ public class DumbProxyServlet extends JSoupServlet {
 	/** Attribute name where the remote URL will be stored. */
 	protected static final String ATTR_REMOTE_URL = "proxyURL";
 
+	// FIXME simultaneous requests
+	protected static CookieDelegate cookieDelegate;
+
 	/** Jersey web client for sending proxied requests. */
 	protected static final Client webClient;
 	static {
-		webClient = Client.create();
+		try {
+			// FIXME overriding cookie handling for now
+			cookieDelegate = new CookieDelegate();
+			cookieDelegate.registerDelegate();
 
-		// we'll handle these manually
-		webClient.setFollowRedirects(false);
+			webClient = Client.create();
+			webClient.setConnectTimeout(30000);
+			webClient.setReadTimeout(30000);
 
-		if( DEBUG ) {
-			webClient.addFilter(new LoggingFilter(System.out));
+			// we'll handle these manually
+			webClient.setFollowRedirects(false);
+
+			if( DEBUG ) {
+				webClient.addFilter(new LoggingFilter(System.out));
+				webClient.addFilter(new ClientFilter() {
+
+					@Override
+					public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
+						ClientResponse response = getNext().handle(cr);
+
+						DateTime responseDate = null;
+						MultivaluedMap<String, String> headers = response.getHeaders();
+						for( Entry<String, List<String>> entry : headers.entrySet() ) {
+							String key = entry.getKey();
+							List<String> vals = entry.getValue();
+
+							//						System.out.println("HEADER:");
+							//						System.out.println("  " + key + "=" + vals.size() + "=" + vals);
+							//						for( String v : vals ) {
+							//							System.out.println("    val=" + v);
+							//						}
+
+							// FIXME app engine + jersey breaks headers involving dates
+							if( key.startsWith("date") ) {
+								if( vals.size() > 1 ) {
+									System.err.println("Repairing date header, vals=" + vals);
+									for( String v : vals ) {
+										System.err.println(" val=" + v);
+									}
+
+									StringBuilder b = new StringBuilder();
+									for( String val : vals ) {
+										b.append(val).append(", ");
+									}
+									b.setLength(b.length() - 2);
+									String date = b.toString();
+
+									System.err.println("Try to repair Date header, new=" + date + ", old=" + vals);
+
+									vals = new ArrayList<String>();
+									vals.add(date);
+									entry.setValue(vals);
+								}
+								responseDate = CookieProxy.parseExpirationDate(vals.get(0));
+								System.out.println("DATE-HEADER-PARSED: " + responseDate);
+							} else if ( key.startsWith("set-cookie") ) {
+								ArrayList<String> newVals = new ArrayList<String>(vals.size());
+								for( int i = 0, ilen = vals.size(); i < ilen; ++i ) {
+									String val = vals.get(i);
+									if( val.matches(".*[Ee]xpires=\\w+$") ) {
+										if( ++i >= ilen ) {
+											System.err.println("WARN: No next value to merge with.");
+										} else {
+											val = val + ", " + vals.get(i);
+										}
+									}
+									newVals.add(val);
+								}
+
+								if( vals.size() != newVals.size() ) {
+									System.err.println("Try to repair Set-cookie header.");
+									System.err.println("Old set-cookie: " + vals);
+									System.err.println("New set-cookie: " + newVals);
+									entry.setValue(newVals);
+								}
+							}
+						}
+
+						if( responseDate == null ) {
+							Date date = response.getResponseDate();
+							System.out.println("RESPONSE-DATE: " + responseDate);
+							if( date != null ) {
+								responseDate = new DateTime(responseDate);
+							}
+						}
+						cookieDelegate.setRequestTime(responseDate);
+
+						response.getCookies();
+						return response;
+					}
+				});
+			}
+		} catch( RuntimeException e ) {
+			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -117,6 +220,8 @@ public class DumbProxyServlet extends JSoupServlet {
 	/** The maximum number of redirects per request. */
 	protected int maxRedirects = 20;
 
+	protected CookieProxy cookyProxy = new CookieProxy();
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		this.doGet(req, resp);
@@ -131,7 +236,7 @@ public class DumbProxyServlet extends JSoupServlet {
 
 		URL url = this.getProxiedURL(req);
 
-		Pair<ClientResponse, URL> result = this.sendRequest(url, req);
+		Pair<ClientResponse, URL> result = this.sendRequest(url, req, resp);
 		ClientResponse response = result.getOne();
 		url = result.getTwo();
 
@@ -167,21 +272,44 @@ public class DumbProxyServlet extends JSoupServlet {
 	 * 
 	 * @throws URISyntaxException if <code>target</code> cannot be parsed as a {@link URI}
 	 */
-	protected WebResource.Builder prepareClientRequest(URL target, HttpServletRequest req, boolean isPost) {
+	protected WebResource.Builder prepareClientRequest(URL target, HttpServletRequest req,
+			HttpServletResponse response, boolean isPost) {
+
+		// mimick chrome for now
+		final String AGENT = "Mozilla/5.0 (X11) " +
+				"AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11";
+
+		System.out.println("DumbProxyServlet.prepareClientRequest()");
 		WebResource res = webClient.resource(target.toExternalForm());
-		WebResource.Builder builder = res.getRequestBuilder();
+		WebResource.Builder builder = res.getRequestBuilder()
+				.accept(MediaType.TEXT_HTML, MediaType.TEXT_PLAIN, MediaType.TEXT_XML)
+				.header(HttpHeaders.USER_AGENT, AGENT);
+
+		//		// transfer cookies to remote site
+		//		Cookie[] cookies = req.getCookies();
+		//		if( cookies != null ) {
+		//			for( Cookie cookie : req.getCookies() ) {
+		//				if( DEBUG ) {
+		//					DebugUtil.dumpServletCookie(cookie);
+		//				}
+		//				// FIXME translate the path
+		//				javax.ws.rs.core.Cookie newCookie = new javax.ws.rs.core.Cookie(
+		//					cookie.getName(), cookie.getValue(), cookie.getPath(), target.getHost());
+		//				builder = builder.cookie(newCookie);
+		//			}
+		//		}
 
 		// transfer cookies to remote site
 		Cookie[] cookies = req.getCookies();
 		if( cookies != null ) {
-			for( Cookie cookie : req.getCookies() ) {
-				if( DEBUG ) {
-					DebugUtil.dumpServletCookie(cookie);
-				}
-				// FIXME translate the path
-				javax.ws.rs.core.Cookie newCookie = new javax.ws.rs.core.Cookie(
-					cookie.getName(), cookie.getValue(), cookie.getPath(), target.getHost());
-				builder = builder.cookie(newCookie);
+			List<NewCookie> remoteCookies = CookieProxy.decodeCookies(
+				target.getHost(), Arrays.asList(cookies));
+			for( NewCookie remoteCookie : remoteCookies ) {
+				// FIXME
+				//				System.out.println("ADD REMOTE COOKIE: " + remoteCookie);
+				//				builder = builder.cookie(remoteCookie);
+				System.out.println("ADD REMOTE COOKIE: " + remoteCookie.toCookie());
+				builder = builder.cookie(remoteCookie.toCookie());
 			}
 		}
 
@@ -207,7 +335,7 @@ public class DumbProxyServlet extends JSoupServlet {
 
 	/**
 	 * Attempts to send a request to <code>url</code>.  This handles redirects
-	 * (up to <code>maxRedirects</code>) and transerring cookies.
+	 * (up to <code>maxRedirects</code>) and transferring cookies.
 	 * 
 	 * @param url the URL to request
 	 * @param req the proxy's request
@@ -217,8 +345,9 @@ public class DumbProxyServlet extends JSoupServlet {
 	 *                          remote server, too many redirects, etc
 	 * @throws NullPointerException if either param is <code>null</code>
 	 */
-	protected Pair<ClientResponse, URL> sendRequest(URL url, HttpServletRequest req)
-			throws ServletException {
+	protected Pair<ClientResponse, URL> sendRequest(URL url, HttpServletRequest req,
+		HttpServletResponse resp)
+				throws ServletException {
 		if( url == null ) {
 			throw new NullPointerException("url is null");
 		}
@@ -235,17 +364,32 @@ public class DumbProxyServlet extends JSoupServlet {
 		// will return or throw exception to terminate the loop
 		while( true ) {
 			// build the request
-			builder = prepareClientRequest(url, req, isPost);
+			builder = prepareClientRequest(url, req, resp, isPost);
 
 			// add any new cookies from redirect responses
 			for( NewCookie addCookie : addCookies ) {
-				javax.ws.rs.core.Cookie newCookie = new javax.ws.rs.core.Cookie(
-					addCookie.getName(), addCookie.getValue(), addCookie.getPath(),
-					addCookie.getDomain(), addCookie.getVersion()
-						);
-				builder = builder.cookie(newCookie);
-				if( DEBUG ) {
-					System.out.println("Extra cookie: " + DebugUtil.newCookieToString(addCookie));
+				try {
+					// don't send malformed cookies, this will throw IllegalArgumentException in that case
+					new Cookie(addCookie.getName(), addCookie.getValue());
+
+					if( addCookie.getMaxAge() == 0 ) {
+						System.out.println("EXPIRED: " + addCookie);
+					} else {
+						builder = builder.cookie(addCookie.toCookie());
+						//						builder = builder.cookie(addCookie);
+						if( DEBUG ) {
+							System.out.println("REMOTE-COOKIE: " + addCookie.toCookie());
+							//							System.out.println("Extra cookie: " + DebugUtil.newCookieToString(addCookie));
+						}
+					}
+					String domain = null; // req.getServerName()
+					Cookie encoded = CookieProxy.encodeCookie(domain, addCookie);
+					System.out.println("PROXY-COOKIE: " + DebugUtil.servletCookieToString(encoded));
+					resp.addCookie(encoded);
+
+				} catch( IllegalArgumentException e ) {
+					System.err.println("SKIPPED: " + addCookie);
+					System.err.println("MESSAGE: " + e.getMessage());
 				}
 			}
 
@@ -265,8 +409,61 @@ public class DumbProxyServlet extends JSoupServlet {
 
 			// else must be a redirect
 			URI location = response.getLocation();
-			if( location == null ) {
+			if( location == null || "".equals(location.toASCIIString()) ) {
+				System.err.println("WARN: Redirect [" + status + "] but no Location given.");
+
+				// FIXME try to workaround
+				try {
+					String urlStr = url.toExternalForm();
+					int slash = urlStr.lastIndexOf('/');
+					if( -1 != slash ) {
+						urlStr = urlStr.substring(0, slash);
+					}
+					location = new URI(urlStr);
+					if( urlStr.contains("t-square.gatech.edu") ) {
+						// FIXME temporary workaround for t-square empty Location: header
+						location = new URI("https://t-square.gatech.edu/portal");
+					}
+				} catch( URISyntaxException e ) {
+					throw new ServletException("Redirect [" + status + "] but no Location given.", e);
+				}
 				throw new ServletException("Redirect [" + status + "] but no Location given.");
+				// FIXME
+				//				throw new ServletException("Redirect [" + status + "] but no Location given.");
+			}
+			if( DEBUG ) {
+				System.out.println("LOCATION: " + location.toASCIIString());
+			}
+
+			isPost = false; // don't POST again when following redirects
+
+
+
+			addCookies = response.getCookies(); // pass along any new cookies
+			for( NewCookie newCookie : addCookies ) {
+				if( newCookie.getDomain() == null ) {
+					System.out.println("Setting domain to '" + url.getHost() + "' in: " + newCookie);
+					//					System.out.println("null domain for " + DebugUtil.newCookieToString(newCookie));
+
+					try {
+						Field dfield = javax.ws.rs.core.Cookie.class.getDeclaredField("domain");
+						dfield.setAccessible(true);
+						dfield.set(newCookie, url.getHost());
+					} catch( IllegalAccessException e ) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch( SecurityException e ) {
+						e.printStackTrace();
+					} catch( NoSuchFieldException e ) {
+						e.printStackTrace();
+					} catch( IllegalArgumentException e ) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+
+			if( !location.isAbsolute() ) {
 			}
 
 			// try again with the new location
@@ -280,9 +477,6 @@ public class DumbProxyServlet extends JSoupServlet {
 				throw new ServletException("Infinite redirect to: " + newUrl.toExternalForm());
 			}
 			url = newUrl;
-
-			isPost = false; // don't POST again when following redirects
-			addCookies = response.getCookies(); // pass along any new cookies
 
 			if( ++redirects > this.maxRedirects ) {
 				throw new ServletException("Redirect limit exceeded: " + maxRedirects);
@@ -339,32 +533,45 @@ public class DumbProxyServlet extends JSoupServlet {
 		// translate cookies back to our client
 		List<NewCookie> respCookies = response.getCookies();
 		if( respCookies != null ) {
-			for( NewCookie newCookie : respCookies ) {
-				try {
-					Cookie clientCookie = new Cookie(newCookie.getName(), newCookie.getValue());
-
-					// FIXME double check this, what about the port?
-					String domain = localRequest.getServerName();
-					clientCookie.setDomain(domain);
-
-					// FIXME check the path
-					clientCookie.setPath("/");
-
-					clientCookie.setMaxAge(newCookie.getMaxAge());
-					clientCookie.setSecure(newCookie.isSecure());
-					clientCookie.setComment(newCookie.getComment());
-					clientCookie.setVersion(newCookie.getVersion());
-
-					localResponse.addCookie(clientCookie);
-
-					if( DEBUG ) {
-						System.out.println("Added cookie: " + DebugUtil.servletCookieToString(clientCookie));
-					}
-				} catch( IllegalArgumentException e ) {
-					// constructor rejects some names, such as date-formatted strings
-					System.err.println("Couldn't transfer cookie: " + e.getMessage());
+			String domain = localRequest.getServerName();
+			int port = localRequest.getServerPort();
+			if( port != 80 && port != 443 ) {
+				domain += ":" + port;
+			}
+			List<Cookie> encodedCookies = CookieProxy.encodeCookies(
+				domain, respCookies);
+			for( Cookie proxyCookie : encodedCookies ) {
+				localResponse.addCookie(proxyCookie);
+				if( DEBUG ) {
+					System.out.println("Added cookie: " + DebugUtil.servletCookieToString(proxyCookie));
 				}
 			}
+			//			for( NewCookie newCookie : respCookies ) {
+			//				try {
+			//					Cookie clientCookie = new Cookie(newCookie.getName(), newCookie.getValue());
+			//
+			//					// FIXME double check this, what about the port?
+			//					String domain = localRequest.getServerName();
+			//					clientCookie.setDomain(domain);
+			//
+			//					// FIXME check the path
+			//					clientCookie.setPath("/");
+			//
+			//					clientCookie.setMaxAge(newCookie.getMaxAge());
+			//					clientCookie.setSecure(newCookie.isSecure());
+			//					clientCookie.setComment(newCookie.getComment());
+			//					clientCookie.setVersion(newCookie.getVersion());
+			//
+			//					localResponse.addCookie(clientCookie);
+			//
+			//					if( DEBUG ) {
+			//						System.out.println("Added cookie: " + DebugUtil.servletCookieToString(clientCookie));
+			//					}
+			//				} catch( IllegalArgumentException e ) {
+			//					// constructor rejects some names, such as date-formatted strings
+			//					System.err.println("Couldn't transfer cookie: " + e.getMessage());
+			//				}
+			//			}
 		}
 	}
 
