@@ -8,13 +8,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
@@ -26,17 +23,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 
-import org.joda.time.DateTime;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
@@ -44,6 +37,7 @@ import edu.gatech.cc.HTML2Mobile.helper.CookieDelegate;
 import edu.gatech.cc.HTML2Mobile.helper.CookieProxy;
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
 import edu.gatech.cc.HTML2Mobile.helper.Pair;
+import edu.gatech.cc.HTML2Mobile.proxy.HeaderRepairFilter;
 
 /** Proof of concept proxying servlet. */
 public class DumbProxyServlet extends JSoupServlet {
@@ -78,85 +72,10 @@ public class DumbProxyServlet extends JSoupServlet {
 			// we'll handle these manually
 			webClient.setFollowRedirects(false);
 
+			webClient.addFilter(new HeaderRepairFilter());
+
 			if( DEBUG ) {
 				webClient.addFilter(new LoggingFilter(System.out));
-				webClient.addFilter(new ClientFilter() {
-
-					@Override
-					public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
-						ClientResponse response = getNext().handle(cr);
-
-						DateTime responseDate = null;
-						MultivaluedMap<String, String> headers = response.getHeaders();
-						for( Entry<String, List<String>> entry : headers.entrySet() ) {
-							String key = entry.getKey();
-							List<String> vals = entry.getValue();
-
-							//						System.out.println("HEADER:");
-							//						System.out.println("  " + key + "=" + vals.size() + "=" + vals);
-							//						for( String v : vals ) {
-							//							System.out.println("    val=" + v);
-							//						}
-
-							// FIXME app engine + jersey breaks headers involving dates
-							if( key.startsWith("date") ) {
-								if( vals.size() > 1 ) {
-									System.err.println("Repairing date header, vals=" + vals);
-									for( String v : vals ) {
-										System.err.println(" val=" + v);
-									}
-
-									StringBuilder b = new StringBuilder();
-									for( String val : vals ) {
-										b.append(val).append(", ");
-									}
-									b.setLength(b.length() - 2);
-									String date = b.toString();
-
-									System.err.println("Try to repair Date header, new=" + date + ", old=" + vals);
-
-									vals = new ArrayList<String>();
-									vals.add(date);
-									entry.setValue(vals);
-								}
-								responseDate = CookieProxy.parseExpirationDate(vals.get(0));
-								System.out.println("DATE-HEADER-PARSED: " + responseDate);
-							} else if ( key.startsWith("set-cookie") ) {
-								ArrayList<String> newVals = new ArrayList<String>(vals.size());
-								for( int i = 0, ilen = vals.size(); i < ilen; ++i ) {
-									String val = vals.get(i);
-									if( val.matches(".*[Ee]xpires=\\w+$") ) {
-										if( ++i >= ilen ) {
-											System.err.println("WARN: No next value to merge with.");
-										} else {
-											val = val + ", " + vals.get(i);
-										}
-									}
-									newVals.add(val);
-								}
-
-								if( vals.size() != newVals.size() ) {
-									System.err.println("Try to repair Set-cookie header.");
-									System.err.println("Old set-cookie: " + vals);
-									System.err.println("New set-cookie: " + newVals);
-									entry.setValue(newVals);
-								}
-							}
-						}
-
-						if( responseDate == null ) {
-							Date date = response.getResponseDate();
-							System.out.println("RESPONSE-DATE: " + responseDate);
-							if( date != null ) {
-								responseDate = new DateTime(responseDate);
-							}
-						}
-						cookieDelegate.setRequestTime(responseDate);
-
-						response.getCookies();
-						return response;
-					}
-				});
 			}
 		} catch( RuntimeException e ) {
 			e.printStackTrace();

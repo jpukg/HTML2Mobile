@@ -79,7 +79,7 @@ public class CookieDelegate extends NewCookieProvider {
 
 					try {
 
-						DateTime expires = CookieProxy.parseExpirationDate(fieldValue);
+						DateTime expires = DateUtil.parseHttpDate(fieldValue);
 						DateTime requested = requestTime != null ? requestTime : new DateTime();
 
 						// FIXME

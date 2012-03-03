@@ -16,10 +16,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.Cookie;
 import javax.ws.rs.core.NewCookie;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -29,47 +25,6 @@ public class CookieProxy {
 	private static final String PREFIX = "__remote__";
 	private static final Pattern isRemoteCookieName =
 			Pattern.compile(Pattern.quote(PREFIX) + "[0-9A-Fa-f]{32}");
-
-
-
-	// match the pieces and discard the rest, be tolerant of different seperators
-	private static final String SEP = "[\\-\\s_:]";
-	private static final String EXPIRE_REGEX = "^.*" +
-			"([a-zA-Z]{3}),\\s*" +
-			"(\\d{2})" + SEP +
-			"([a-zA-Z]{3})" + SEP +
-			"(\\d{4})\\s+" +
-			"(\\d{2})" + SEP +
-			"(\\d{2})" + SEP +
-			"(\\d{2})" +
-			".*$";
-	// replace with standardized format for datetime parsing
-	private static final String EXPIRE_REPLACE = "$2-$3-$4 $5:$6:$7";
-	private static final String DATE_FORMAT = "dd-MMM-yyyy HH:mm:ss";
-
-	private static final Pattern normalizeDate = Pattern.compile(EXPIRE_REGEX);
-
-	/** Attempt to parse an expires= value into a datetime in UTC
-	 * .
-	 * @param date the date
-	 * @return the datetime represented by <code>date</code>
-	 * @throws IllegalArgumentException if the datestring cannot be parsed
-	 * @throws NullPointerException if <code>date</code> is <code>null</code>
-	 */
-	public static DateTime parseExpirationDate(String date) {
-		if( date == null ) {
-			throw new NullPointerException("date is null");
-		}
-
-		// try to cleanup variations in the date string
-		String normalized = normalizeDate.matcher(date).replaceFirst(EXPIRE_REPLACE);
-
-		// attempt to parse
-		DateTimeFormatter format = DateTimeFormat.forPattern(DATE_FORMAT).withZoneUTC();
-		DateTime dateTime = format.parseDateTime(normalized);
-
-		return dateTime;
-	}
 
 	public static String hashCookie(NewCookie cookie) {
 		if( cookie == null ) {
