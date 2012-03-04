@@ -133,12 +133,8 @@ public class CookieProxy {
 	}
 
 	public List<HttpCookie> getCookiesForLocation(URL requestURL) {
-		System.out.println("CookieProxy.getCookiesForLocation()");
 		String host = requestURL.getHost();
 		String path = requestURL.getPath();
-
-		System.out.println("domain: " + host);
-		System.out.println("path: " + path);
 
 		ArrayList<HttpCookie> hostCookies = new ArrayList<HttpCookie>();
 
@@ -202,15 +198,6 @@ public class CookieProxy {
 
 	public static List<Cookie> encodeCookies(String domain, Collection<NewCookie> newCookies) {
 		return encodeCookies(domain, "/", newCookies);
-	}
-
-	public static Cookie encodeCookie(String domain, NewCookie newCookie) {
-		return encodeCookies(domain, "/",
-			Collections.singletonList(newCookie)).get(0);
-	}
-	public static Cookie encodeCookie(String domain, String path, NewCookie newCookie) {
-		return encodeCookies(domain, path,
-			Collections.singletonList(newCookie)).get(0);
 	}
 
 	public static List<Cookie> encodeCookies(String domain, String path, Collection<NewCookie> newCookies) {
