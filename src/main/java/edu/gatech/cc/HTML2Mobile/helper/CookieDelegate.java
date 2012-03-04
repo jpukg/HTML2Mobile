@@ -15,6 +15,8 @@ import org.joda.time.Seconds;
 import com.sun.jersey.core.impl.provider.header.NewCookieProvider;
 
 public class CookieDelegate extends NewCookieProvider {
+	private static final boolean DEBUG = false;
+
 	private static final Pattern hasExpires =
 			Pattern.compile("expires=", Pattern.CASE_INSENSITIVE);
 
@@ -30,8 +32,10 @@ public class CookieDelegate extends NewCookieProvider {
 
 	@Override
 	public NewCookie fromString(String headerValue) throws IllegalArgumentException {
-		// FIXME
-		System.out.println("PARSE COOKIE: " + headerValue);
+		if( DEBUG ) {
+			// FIXME
+			System.out.println("PARSE COOKIE: " + headerValue);
+		}
 
 		String splitOn = "[;,]";
 		int version = 1;
@@ -82,14 +86,18 @@ public class CookieDelegate extends NewCookieProvider {
 						DateTime expires = DateUtil.parseHttpDate(fieldValue);
 						DateTime requested = requestTime != null ? requestTime : new DateTime();
 
-						// FIXME
-						System.out.println("requested: " + requested);
-						System.out.println("expires: " + expires);
+						if( DEBUG ) {
+							// FIXME
+							System.out.println("requested: " + requested);
+							System.out.println("expires: " + expires);
+						}
 
 						int seconds = Seconds.secondsBetween(requested, expires).getSeconds();
 
-						System.out.println("secs: " + seconds);
-						System.out.println();
+						if( DEBUG ) {
+							System.out.println("secs: " + seconds);
+							System.out.println();
+						}
 
 						if( requested.isBefore(expires) ) {
 							maxAge = Math.max(0, seconds);
@@ -107,8 +115,10 @@ public class CookieDelegate extends NewCookieProvider {
 		}
 
 		NewCookie newCookie = new NewCookie(name, value, path, domain, version, comment, maxAge, secure);
-		System.out.println("PARSED: " + newCookie);
-		System.out.println("ASCOOK: " + newCookie.toCookie());
+		if( DEBUG ) {
+			System.out.println("PARSED: " + newCookie);
+			System.out.println("ASCOOK: " + newCookie.toCookie());
+		}
 		return newCookie;
 	}
 

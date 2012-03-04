@@ -2,18 +2,26 @@ package edu.gatech.cc.HTML2Mobile.helper;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.HttpCookie;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.NewCookie;
 
 import com.google.gson.Gson;
@@ -25,6 +33,144 @@ public class CookieProxy {
 	private static final String PREFIX = "__remote__";
 	private static final Pattern isRemoteCookieName =
 			Pattern.compile(Pattern.quote(PREFIX) + "[0-9A-Fa-f]{32}");
+
+	/**
+	 * Map tuple(name, domain, path) -> cookie
+	 */
+	protected Map<Tuple, HttpCookie> cookies =
+			new LinkedHashMap<Tuple, HttpCookie>();
+
+	public CookieProxy() {
+
+	}
+
+	public void loadRemoteCookies(HttpServletRequest req) {
+		if( req == null ) {
+			throw new NullPointerException("req is null");
+		}
+
+		// transfer cookies to remote site
+		Cookie[] cookies = req.getCookies();
+		if( cookies != null ) {
+			List<NewCookie> remoteCookies = this.decodeCookies(null, Arrays.asList(cookies));
+			for( NewCookie cookie : remoteCookies ) {
+				HttpCookie httpCookie = newToHttpCookie(cookie);
+
+				if( httpCookie.getDomain() == null ) {
+					System.err.println("NULL-DOMAIN-REMOTE-COOKIE: " + httpCookie);
+				}
+
+				System.out.println("LOAD-REMOTE-COOKIE: " + httpCookie);
+				this.addCookie(httpCookie);
+			}
+		}
+	}
+
+	public static NewCookie httpToNewCookie(HttpCookie c) {
+		if( c == null ) {
+			throw new NullPointerException("cookie is null");
+		}
+
+		return new NewCookie(c.getName(), c.getValue(), c.getPath(),
+			c.getDomain(), c.getVersion(), c.getComment(),
+			(int)c.getMaxAge(), c.getSecure());
+	}
+
+	public static HttpCookie newToHttpCookie(NewCookie cookie) {
+		if( cookie == null ) {
+			throw new NullPointerException("c is null");
+		}
+
+		HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
+		httpCookie.setDomain(cookie.getDomain());
+		httpCookie.setMaxAge(cookie.getMaxAge());
+		httpCookie.setPath(cookie.getPath());
+		httpCookie.setComment(cookie.getComment());
+		httpCookie.setVersion(cookie.getVersion());
+		httpCookie.setSecure(cookie.isSecure());
+
+		return httpCookie;
+	}
+
+	public void addCookies(String domain, NewCookie... cookies) {
+		if( domain == null ) {
+			throw new NullPointerException("domain is null");
+		}
+
+		HttpCookie[] httpCookies = new HttpCookie[cookies.length];
+		for( int i = 0, ilen = cookies.length; i < ilen; ++i ) {
+			httpCookies[i] = newToHttpCookie(cookies[i]);
+		}
+
+		addCookies(domain, httpCookies);
+	}
+
+	public void addCookies(String domain, HttpCookie... cookies) {
+		if( domain == null ) {
+			throw new NullPointerException("domain is null");
+		}
+
+		for( HttpCookie cookie : cookies ) {
+			if( cookie.getDomain() == null ) {
+				cookie.setDomain(domain);
+				System.out.println("SET-DOMAIN-COOKIE: " + cookie);
+			}
+			addCookie(cookie);
+		}
+	}
+
+	public void addCookie(HttpCookie cookie) {
+		if( cookie == null ) {
+			throw new NullPointerException("cookie is null");
+		}
+		Tuple key = new Tuple(cookie.getName(), cookie.getDomain(), cookie.getPath());
+		this.cookies.put(key, cookie);
+	}
+
+	public void addCookie(NewCookie cookie) {
+		Tuple key = new Tuple(cookie.getName(), cookie.getDomain(), cookie.getPath());
+		this.cookies.put(key, newToHttpCookie(cookie));
+	}
+
+	public List<HttpCookie> getCookiesForLocation(URL requestURL) {
+		System.out.println("CookieProxy.getCookiesForLocation()");
+		String host = requestURL.getHost();
+		String path = requestURL.getPath();
+
+		System.out.println("domain: " + host);
+		System.out.println("path: " + path);
+
+		ArrayList<HttpCookie> hostCookies = new ArrayList<HttpCookie>();
+
+		for( Entry<Tuple, HttpCookie> entry : cookies.entrySet() ) {
+			HttpCookie cookie = entry.getValue();
+			if( cookie.hasExpired() ) {
+				System.out.println("SKIP-EXPIRED: " + cookie);
+			} else if( HttpCookie.domainMatches(cookie.getDomain(), host)) {
+				// FIXME path check and filter to only most-specific
+				hostCookies.add(cookie);
+				System.out.println("HOST-COOKIE: " + cookie);
+			} else {
+				System.out.println("NOT-HOST-COOKIE: " + cookie);
+			}
+		}
+
+		return hostCookies;
+	}
+
+	public void storeRemoteCookies(HttpServletRequest req, HttpServletResponse resp) {
+
+		ArrayList<NewCookie> newCookies = new ArrayList<NewCookie>(cookies.size());
+		for( HttpCookie httpCookie : cookies.values() ) {
+			newCookies.add(httpToNewCookie(httpCookie));
+		}
+
+		List<Cookie> proxyCookies = this.encodeCookies(null, newCookies);
+		for( Cookie proxyCookie : proxyCookies ) {
+			resp.addCookie(proxyCookie);
+			System.out.println("STORE-REMOTE-COOKIE: " + DebugUtil.servletCookieToString(proxyCookie));
+		}
+	}
 
 	public static String hashCookie(NewCookie cookie) {
 		if( cookie == null ) {
@@ -51,9 +197,7 @@ public class CookieProxy {
 		if( name == null ) {
 			throw new NullPointerException("name is null");
 		}
-		boolean isRemote = isRemoteCookieName.matcher(name).matches();
-		System.out.println(name + " isRemote? " + isRemote);
-		return isRemote;
+		return isRemoteCookieName.matcher(name).matches();
 	}
 
 	public static List<Cookie> encodeCookies(String domain, Collection<NewCookie> newCookies) {
@@ -80,10 +224,7 @@ public class CookieProxy {
 		ArrayList<Cookie> cookies = new ArrayList<Cookie>(newCookies.size());
 		for( NewCookie newCookie : newCookies ) {
 			String name = PREFIX + hashCookie(newCookie);
-			String value = serializeCookie(newCookie);//newCookie.toString();
-
-			System.out.println("DEBUG_VAL: " + DebugUtil.newCookieToString(newCookie));
-			System.out.println("TOSTR_VAL: " + value);
+			String value = serializeCookie(newCookie);
 
 			try {
 				Cookie cookie = new Cookie(name, value);
@@ -95,8 +236,8 @@ public class CookieProxy {
 				cookie.setMaxAge(newCookie.getMaxAge());
 
 				// FIXME
-				cookie.setSecure(newCookie.isSecure());
-				//				cookie.setSecure(false);
+				//				cookie.setSecure(newCookie.isSecure());
+				cookie.setSecure(false);
 
 				cookies.add(cookie);
 			} catch( IllegalArgumentException e ) {
