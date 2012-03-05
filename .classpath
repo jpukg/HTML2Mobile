@@ -7,6 +7,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/jersey-core-1.11.jar" sourcepath="war/WEB-INF/lib/jersey-core-1.11-sources.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/jsoup-1.6.1.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gson-2.1.jar" sourcepath="war/WEB-INF/lib/gson-2.1-sources.jar"/>
-	<classpathentry kind="var" path="war/WEB-INF/lib/joda-time-2.0.jar" sourcepath="war/WEB-INF/lib/joda-time-2.0-sources.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/joda-time-2.0.jar" sourcepath="war/WEB-INF/lib/joda-time-2.0-sources.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
