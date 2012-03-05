@@ -43,7 +43,7 @@ public class DumbProxyServlet extends JSoupServlet {
 	private static final long serialVersionUID = 1L;
 
 	/** Compile-time constant for logging debug info. */
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
 	/** Constant for logging URL rewrites, separate from DEBUG. */
 	private static final boolean DEBUG_REWRITES = false;
