@@ -34,7 +34,7 @@ public class BaseGroup {
 
 			sb.append("\t\t<"+insideTag+">\n");
 
-			sb.append("\t\t\t<text>"+a.ownText()+"</text>\n");
+			sb.append("\t\t\t<text>"+a.html()+"</text>\n");
 			for(Attribute attrib : a.attributes()) {
 				if(!attrib.getValue().isEmpty()) {
 					sb.append("\t\t\t<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");

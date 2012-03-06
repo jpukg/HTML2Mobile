@@ -17,6 +17,10 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.IFrameServlet</servlet-class>
 	</servlet>
 	<servlet>
+	   <servlet-name>Content_Parsing</servlet-name>
+	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.ContentParserServlet</servlet-class>
+	</servlet>
+	<servlet>
 	   <servlet-name>Form_Parsing</servlet-name>
 	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.FormParserServlet</servlet-class>
 	</servlet>
@@ -35,6 +39,10 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	<servlet-mapping>
 		<servlet-name>IFrame_Parsing</servlet-name>
 		<url-pattern>/iframeparser</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Content_Parsing</servlet-name>
+		<url-pattern>/contentparser</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>HTML2Mobile</servlet-name>
