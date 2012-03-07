@@ -45,7 +45,8 @@ public abstract class JSoupServlet extends HttpServlet {
 
 		PrintWriter writer = resp.getWriter();
 		writer.write("<html><body><pre>");
-		writer.write(result.replace("<", "&lt;").replace(">", "&gt;"));
+		writer.write(result);
+		//writer.write(result.replace("<", "&lt;").replace(">", "&gt;"));
 		writer.write("</pre></body></html>");
 	}
 
