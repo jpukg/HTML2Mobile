@@ -1,4 +1,4 @@
-package edu.gatech.cc.HTML2Mobile.helper;
+package edu.gatech.cc.HTML2Mobile.proxy;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -28,7 +28,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import edu.gatech.cc.HTML2Mobile.proxy.ProxyException;
+import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
+import edu.gatech.cc.HTML2Mobile.helper.Tuple;
 
 public class CookieProxy {
 	private static final Charset UTF8 = Charset.forName("UTF-8");

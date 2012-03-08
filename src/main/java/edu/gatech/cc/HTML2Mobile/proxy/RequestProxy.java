@@ -23,7 +23,6 @@ import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import edu.gatech.cc.HTML2Mobile.helper.CookieDelegate;
-import edu.gatech.cc.HTML2Mobile.helper.CookieProxy;
 import edu.gatech.cc.HTML2Mobile.helper.Pair;
 
 /**
