@@ -2,39 +2,25 @@ package edu.gatech.cc.HTML2Mobile;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.HttpCookie;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.NewCookie;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.filter.LoggingFilter;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-import edu.gatech.cc.HTML2Mobile.helper.CookieDelegate;
-import edu.gatech.cc.HTML2Mobile.helper.CookieProxy;
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
-import edu.gatech.cc.HTML2Mobile.helper.Pair;
-import edu.gatech.cc.HTML2Mobile.proxy.HeaderRepairFilter;
+import edu.gatech.cc.HTML2Mobile.proxy.RequestProxy;
 
 /** Proof of concept proxying servlet. */
 public class DumbProxyServlet extends JSoupServlet {
@@ -48,40 +34,12 @@ public class DumbProxyServlet extends JSoupServlet {
 	/** Constant for logging URL rewrites, separate from DEBUG. */
 	private static final boolean DEBUG_REWRITES = false;
 
-	/** Attribute name where the remote URL will be stored. */
+	/**
+	 * Attribute name where the remote URL will be stored, to go away soon.
+	 * @deprecated
+	 */
+	@Deprecated
 	protected static final String ATTR_REMOTE_URL = "proxyURL";
-
-	/** Attribute name where the cookie proxy will be stored. */
-	protected static final String ATTR_COOKIE_PROXY = "cookieProxy";
-
-	// FIXME simultaneous requests
-	protected static CookieDelegate cookieDelegate;
-
-	/** Jersey web client for sending proxied requests. */
-	protected static final Client webClient;
-	static {
-		try {
-			// FIXME overriding cookie handling for now
-			cookieDelegate = new CookieDelegate();
-			cookieDelegate.registerDelegate();
-
-			webClient = Client.create();
-			webClient.setConnectTimeout(30000);
-			webClient.setReadTimeout(30000);
-
-			// we'll handle these manually
-			webClient.setFollowRedirects(false);
-
-			webClient.addFilter(new HeaderRepairFilter());
-
-			if( DEBUG ) {
-				webClient.addFilter(new LoggingFilter(System.out));
-			}
-		} catch( RuntimeException e ) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
 
 	/** Host matching pattern. */
 	private static final Pattern hasHost =
@@ -136,11 +94,6 @@ public class DumbProxyServlet extends JSoupServlet {
 	//
 	// Instance fields / methods
 
-	/** The maximum number of redirects per request. */
-	protected int maxRedirects = 20;
-
-	protected CookieProxy cookyProxy = new CookieProxy();
-
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		this.doGet(req, resp);
@@ -155,21 +108,9 @@ public class DumbProxyServlet extends JSoupServlet {
 
 		URL url = this.getProxiedURL(req);
 
-		// prepare the cookie proxy and load any remote cookies from this request
-		CookieProxy cookieProxy = new CookieProxy();
-		req.setAttribute(ATTR_COOKIE_PROXY, cookieProxy);
-		cookieProxy.loadRemoteCookies(req);
-
-		// send the request
-		Pair<ClientResponse, URL> result = this.sendRequest(url, req, resp);
-		ClientResponse response = result.getOne();
-		url = result.getTwo();
-
-		// store remaining cookies
-		cookieProxy.storeRemoteCookies(req, resp);
-
-		// for process method to find
-		req.setAttribute(ATTR_REMOTE_URL, url);
+		RequestProxy proxy = new RequestProxy();
+		ClientResponse response = proxy.proxyRequest(url, req, resp);
+		req.setAttribute(ATTR_REMOTE_URL, req.getAttribute(RequestProxy.ATTR_REMOTE_URL));
 
 		// parse the document
 		String contents = response.getEntity(String.class);
@@ -182,151 +123,6 @@ public class DumbProxyServlet extends JSoupServlet {
 		PrintWriter writer = resp.getWriter();
 		writer.write(output);
 		writer.flush();
-	}
-
-	/**
-	 * Prepares a Jersey client request.
-	 * 
-	 * Cookies will be copied from <code>req</code> and sent along with the request.  If
-	 * <code>isPost</code> is true, request parameters will be added and the type will be
-	 * set to {@link MediaType#APPLICATION_FORM_URLENCODED_TYPE}.
-	 * 
-	 * @param target the target URL for the request
-	 * @param req    the proxy servlet's request
-	 * @param isPost <true> if this is a <code>POST</code>, otherwise <code>GET</code> will be used
-	 * @return the request builder, ready to send
-	 * 
-	 * @throws URISyntaxException if <code>target</code> cannot be parsed as a {@link URI}
-	 */
-	protected WebResource.Builder prepareClientRequest(URL target, HttpServletRequest req,
-			HttpServletResponse response, boolean isPost) {
-
-		// mimick chrome for now
-		final String AGENT = "Mozilla/5.0 (X11) " +
-				"AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11";
-
-		WebResource res = webClient.resource(target.toExternalForm());
-		WebResource.Builder builder = res.getRequestBuilder()
-				.accept(MediaType.TEXT_HTML, MediaType.TEXT_PLAIN, MediaType.TEXT_XML)
-				.header(HttpHeaders.USER_AGENT, AGENT);
-
-		// set cookies for remote location
-		CookieProxy cookieProxy = (CookieProxy)req.getAttribute(ATTR_COOKIE_PROXY);
-		List<HttpCookie> cookies = cookieProxy.getCookiesForLocation(target);
-		for( HttpCookie cookie : cookies ) {
-			builder.cookie(CookieProxy.httpToNewCookie(cookie).toCookie());
-		}
-
-		// form encode parameters if POST'ing
-		if( isPost ) {
-			MultivaluedMap<String, String> postParams = new MultivaluedMapImpl();
-			@SuppressWarnings("unchecked")
-			Map<String,String[]> reqParams = req.getParameterMap();
-			for( Map.Entry<String, String[]> paramEntry : reqParams.entrySet() ) {
-				String key = paramEntry.getKey();
-				String[] vals = paramEntry.getValue();
-				String val = vals[0];
-				if( vals.length > 1 ) {
-					System.err.println("WARN: More than one value for key: " + key);
-				}
-				postParams.add(key, val);
-			}
-			builder = builder.entity(postParams, MediaType.APPLICATION_FORM_URLENCODED_TYPE);
-		}
-
-		return builder;
-	}
-
-	/**
-	 * Attempts to send a request to <code>url</code>.  This handles redirects
-	 * (up to <code>maxRedirects</code>) and transferring cookies.
-	 * 
-	 * @param url the URL to request
-	 * @param req the proxy's request
-	 * @return the client response, will not be <code>null</code>
-	 * 
-	 * @throws ServletException if anything goes wrong, such as a bad status from the
-	 *                          remote server, too many redirects, etc
-	 * @throws NullPointerException if either param is <code>null</code>
-	 */
-	protected Pair<ClientResponse, URL> sendRequest(URL url, HttpServletRequest req,
-		HttpServletResponse resp)
-				throws ServletException {
-		if( url == null ) {
-			throw new NullPointerException("url is null");
-		}
-		if( req == null ) {
-			throw new NullPointerException("req is null");
-		}
-
-		CookieProxy cookieProxy = (CookieProxy)req.getAttribute(ATTR_COOKIE_PROXY);
-
-		boolean isPost = "POST".equals(req.getMethod());
-		int redirects = 0;
-		// will return or throw exception to terminate the loop
-		while( true ) {
-			// build and send the request
-			WebResource.Builder builder = prepareClientRequest(url, req, resp, isPost);
-			ClientResponse response = (isPost ?
-				builder.post(ClientResponse.class) : builder.get(ClientResponse.class));
-
-			// request succeeded
-			if( ClientResponse.Status.OK.equals(response.getClientResponseStatus()) ) {
-				cookieProxy.addCookies(url.getHost(),
-					response.getCookies().toArray(new NewCookie[0]));
-				return Pair.makePair(response, url);
-			}
-
-			// request failed
-			int status = response.getStatus();
-			if( status < 300 || status >= 400 ) {
-				throw new ServletException("Server responded with: " + status);
-			}
-
-			// else must be a redirect
-			URI location = response.getLocation();
-			if( location == null || "".equals(location.toASCIIString()) ) {
-				System.err.println("WARN: Redirect [" + status + "] but no Location given.");
-
-				// FIXME try to workaround
-				try {
-					String urlStr = url.toExternalForm();
-					int slash = urlStr.lastIndexOf('/');
-					if( -1 != slash ) {
-						urlStr = urlStr.substring(0, slash);
-					}
-					location = new URI(urlStr);
-				} catch( URISyntaxException e ) {
-					throw new ServletException("Redirect [" + status + "] but no Location given.", e);
-				}
-				throw new ServletException("Redirect [" + status + "] but no Location given.");
-			}
-			if( DEBUG ) {
-				System.out.println("LOCATION: " + location.toASCIIString());
-			}
-
-			isPost = false; // don't POST again when following redirects
-
-			// pass along any new cookies
-			cookieProxy.addCookies(url.getHost(),
-				response.getCookies().toArray(new NewCookie[0]));
-
-			// try again with the new location
-			URL newUrl;
-			try {
-				newUrl = location.toURL();
-			} catch( MalformedURLException e ) {
-				throw new ServletException("Couldn't parse redirect URI as URL: " + location);
-			}
-			if( newUrl.equals(url) ) {
-				throw new ServletException("Infinite redirect to: " + newUrl.toExternalForm());
-			}
-			url = newUrl;
-
-			if( ++redirects > this.maxRedirects ) {
-				throw new ServletException("Redirect limit exceeded: " + maxRedirects);
-			}
-		}
 	}
 
 	/**

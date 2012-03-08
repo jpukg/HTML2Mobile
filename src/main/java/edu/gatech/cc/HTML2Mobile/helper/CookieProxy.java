@@ -28,6 +28,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import edu.gatech.cc.HTML2Mobile.proxy.ProxyException;
+
 public class CookieProxy {
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 	private static final String PREFIX = "__remote__";
@@ -177,8 +179,7 @@ public class CookieProxy {
 		try {
 			digest = MessageDigest.getInstance("MD5");
 		} catch( NoSuchAlgorithmException e ) {
-			// FIXME: better exception type
-			throw new RuntimeException("MD5 unsupported?", e);
+			throw new ProxyException("MD5 unsupported?", e);
 		}
 
 		String input = "name:" + cookie.getName() + ":path:" + cookie.getPath()
@@ -301,7 +302,7 @@ public class CookieProxy {
 		try {
 			return URLEncoder.encode(json, "UTF-8");
 		} catch( UnsupportedEncodingException e ) {
-			throw new RuntimeException("UTF-8 not supported?");
+			throw new ProxyException("UTF-8 not supported?");
 		}
 	}
 
@@ -311,7 +312,7 @@ public class CookieProxy {
 			try {
 				decoded = URLDecoder.decode(cookie, "UTF-8");
 			} catch( UnsupportedEncodingException e ) {
-				throw new RuntimeException("UTF-8 not supported?");
+				throw new ProxyException("UTF-8 not supported?");
 			}
 
 			Gson gson = new Gson();
