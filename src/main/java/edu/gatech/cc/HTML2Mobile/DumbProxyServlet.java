@@ -3,11 +3,7 @@ package edu.gatech.cc.HTML2Mobile;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +16,7 @@ import org.jsoup.nodes.Element;
 import com.sun.jersey.api.client.ClientResponse;
 
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
+import edu.gatech.cc.HTML2Mobile.proxy.LinkRewriter;
 import edu.gatech.cc.HTML2Mobile.proxy.RequestProxy;
 
 /** Proof of concept proxying servlet. */
@@ -30,66 +27,6 @@ public class DumbProxyServlet extends JSoupServlet {
 
 	/** Compile-time constant for logging debug info. */
 	private static final boolean DEBUG = false;
-
-	/** Constant for logging URL rewrites, separate from DEBUG. */
-	private static final boolean DEBUG_REWRITES = false;
-
-	/**
-	 * Attribute name where the remote URL will be stored, to go away soon.
-	 * @deprecated
-	 */
-	@Deprecated
-	protected static final String ATTR_REMOTE_URL = "proxyURL";
-
-	/** Host matching pattern. */
-	private static final Pattern hasHost =
-			Pattern.compile("^(https?:)?//.*", Pattern.CASE_INSENSITIVE);
-
-	/**
-	 * Checks if the given url includes a host part.
-	 * 
-	 * @param url the url to check
-	 * @return <code>true</code> if the URL has a host part
-	 */
-	public static boolean hasHost(String url) {
-		if( url == null ) {
-			throw new NullPointerException("url is null");
-		}
-		return hasHost.matcher(url).matches();
-	}
-
-	/**
-	 * Rewrites a URL to be absolute and with a host.
-	 * 
-	 * @param requestURL the base URL of the request
-	 * @param targetURL  the resource URL to rewrite
-	 * @return the rewritten URL or <code>targetURL</code> if it already includes the host
-	 * @throws MalformedURLException if the rewritten URL is not well-formed
-	 */
-	public static String rewriteDirectResource(URL requestURL, String targetURL)
-			throws MalformedURLException {
-		// no rewrite when the host is included
-		if( hasHost.matcher(targetURL).matches() ) {
-			return targetURL;
-		}
-
-		// make relative URLs absolute
-		if( !targetURL.startsWith("/") ) {
-			String path = requestURL.getPath();
-
-			// strip off non-dir part
-			int lastSlash = path.lastIndexOf('/');
-			if( -1 != lastSlash ) {
-				path = path.substring(0, lastSlash);
-			}
-
-			targetURL = path + "/" + targetURL;
-		}
-
-		// now point to the original server
-		URL newTarget = new URL(requestURL.getProtocol(), requestURL.getHost(), requestURL.getPort(), targetURL);
-		return newTarget.toExternalForm();
-	}
 
 	//
 	// Instance fields / methods
@@ -110,7 +47,6 @@ public class DumbProxyServlet extends JSoupServlet {
 
 		RequestProxy proxy = new RequestProxy();
 		ClientResponse response = proxy.proxyRequest(url, req, resp);
-		req.setAttribute(ATTR_REMOTE_URL, req.getAttribute(RequestProxy.ATTR_REMOTE_URL));
 
 		// parse the document
 		String contents = response.getEntity(String.class);
@@ -126,8 +62,7 @@ public class DumbProxyServlet extends JSoupServlet {
 	}
 
 	/**
-	 * Reads and parses the <code>url</code> parameter.  Also assigns the
-	 * result to the {@link #ATTR_REMOTE_URL} attribute of <code>req</code>.
+	 * Reads and parses the <code>url</code> parameter.
 	 * 
 	 * @param req the proxy servlet request
 	 * @return the parsed URL
@@ -141,12 +76,10 @@ public class DumbProxyServlet extends JSoupServlet {
 		}
 
 		// add protocol if not present
-		if( !hasHost(urlParam) ) {
-			try {
-				urlParam = new URI(req.getRequestURI()).getScheme() + "://" + urlParam;
-			} catch( URISyntaxException e ) {
-				throw new ServletException(e);
-			}
+		if( !LinkRewriter.hasHost(urlParam) ) {
+			urlParam = req.getScheme() + "://" + urlParam;
+		} else if ( urlParam.startsWith("//") ) {
+			urlParam = req.getScheme() + ":" + urlParam;
 		}
 
 		// now parse
@@ -155,7 +88,6 @@ public class DumbProxyServlet extends JSoupServlet {
 			if( DEBUG ) {
 				System.out.println("URL=" + url.toExternalForm());
 			}
-			req.setAttribute(ATTR_REMOTE_URL, url);
 			return url;
 		} catch( MalformedURLException e ) {
 			throw new ServletException("Cannot parse: " + urlParam, e);
@@ -169,8 +101,10 @@ public class DumbProxyServlet extends JSoupServlet {
 	 */
 	@Override
 	public String process(Document doc, HttpServletRequest req) throws ServletException, IOException {
-		URL url = (URL)req.getAttribute(ATTR_REMOTE_URL);
+		URL url = (URL)req.getAttribute(RequestProxy.ATTR_REMOTE_URL);
 		String requestURI = req.getRequestURI() + "?url=";
+
+		LinkRewriter linkRewriter = new LinkRewriter(requestURI, url);
 
 		// rewrite elements that need to proxy through us
 		for( Element el : doc.select("a[href], form[action], iframe[src]") ) {
@@ -186,13 +120,7 @@ public class DumbProxyServlet extends JSoupServlet {
 				throw new ServletException("Unexpected node type: " + node);
 			}
 
-			String oldVal = el.attr(attr);
-			String newVal = requestURI + URLEncoder.encode(rewriteDirectResource(url, oldVal), "UTF-8");
-			el.attr(attr, newVal);
-
-			if( DEBUG_REWRITES ) {
-				System.out.println("Rewrote: '" + oldVal + "' -> '" + newVal + "'");
-			}
+			el.attr(attr, linkRewriter.rewriteProxiedResource(el.attr(attr)));
 		}
 
 		// rewrite elements that should not proxy through us
@@ -207,13 +135,7 @@ public class DumbProxyServlet extends JSoupServlet {
 				throw new ServletException("Unexpected node type: " + node);
 			}
 
-			String oldVal = el.attr(attr);
-			String newVal = rewriteDirectResource(url, oldVal);
-			el.attr(attr, newVal);
-
-			if( DEBUG_REWRITES ) {
-				System.out.println("Rewrote: '" + oldVal + "' -> '" + newVal + "'");
-			}
+			el.attr(attr, linkRewriter.rewriteDirectResource(el.attr(attr)));
 		}
 
 		return doc.toString();
