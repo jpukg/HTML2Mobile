@@ -11,11 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import com.sun.jersey.api.client.ClientResponse;
 
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
+import edu.gatech.cc.HTML2Mobile.proxy.LinkProxyExtractor;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkRewriter;
 import edu.gatech.cc.HTML2Mobile.proxy.RequestProxy;
 
@@ -104,39 +104,10 @@ public class DumbProxyServlet extends JSoupServlet {
 		URL url = (URL)req.getAttribute(RequestProxy.ATTR_REMOTE_URL);
 		String requestURI = req.getRequestURI() + "?url=";
 
-		LinkRewriter linkRewriter = new LinkRewriter(requestURI, url);
+		ExtractionController extraction = new ExtractionController(
+			new LinkProxyExtractor(requestURI, url));
 
-		// rewrite elements that need to proxy through us
-		for( Element el : doc.select("a[href], form[action], iframe[src]") ) {
-			String node = el.nodeName();
-			String attr;
-			if( "a".equalsIgnoreCase(node) ) {
-				attr = "href";
-			} else if( "form".equalsIgnoreCase(node) ) {
-				attr = "action";
-			} else if( "iframe".equalsIgnoreCase(node) ) {
-				attr = "src";
-			} else {
-				throw new ServletException("Unexpected node type: " + node);
-			}
-
-			el.attr(attr, linkRewriter.rewriteProxiedResource(el.attr(attr)));
-		}
-
-		// rewrite elements that should not proxy through us
-		for( Element el : doc.select("img[src], script[src], link[href]") ) {
-			String node = el.nodeName().toLowerCase();
-			String attr;
-			if( "link".equals(node) ) {
-				attr = "href";
-			} else if ( "img".equals(node) || "script".equals(node) ) {
-				attr = "src";
-			} else {
-				throw new ServletException("Unexpected node type: " + node);
-			}
-
-			el.attr(attr, linkRewriter.rewriteDirectResource(el.attr(attr)));
-		}
+		extraction.extract(doc);
 
 		return doc.toString();
 	}
