@@ -32,17 +32,12 @@ public class ContentExtractor implements IExtractor {
 			Element body = doc.body();
 
 			skip_tags.add("script");
-			//skip_tags.add("a");
 
-			String output="";
-			//output += "<html dir=\"ltr\" lang=\"en-US\">";
+			String output="<content>";
 
-
-			output+=this.stripSearchElement(body);
+			output+=this.stripSearchElement(body) +  "</content>";
 
 			out.append(output);
-
-
 
 		} catch(Exception e ) {
 			throw new ExtractorException(e);
