@@ -1,4 +1,4 @@
-package edu.gatech.cc.HTML2Mobile;
+package edu.gatech.cc.HTML2Mobile.extract;
 
 import java.io.StringWriter;
 import java.util.ArrayList;

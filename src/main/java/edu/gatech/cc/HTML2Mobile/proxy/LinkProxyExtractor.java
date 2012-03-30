@@ -7,8 +7,8 @@ import java.net.URL;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import edu.gatech.cc.HTML2Mobile.ExtractorException;
-import edu.gatech.cc.HTML2Mobile.IExtractor;
+import edu.gatech.cc.HTML2Mobile.extract.ExtractorException;
+import edu.gatech.cc.HTML2Mobile.extract.IExtractor;
 
 /**
  * An extractor that rewrites links for proxy purposes.

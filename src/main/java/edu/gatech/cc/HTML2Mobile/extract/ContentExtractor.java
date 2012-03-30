@@ -1,4 +1,4 @@
-package edu.gatech.cc.HTML2Mobile.proxy;
+package edu.gatech.cc.HTML2Mobile.extract;
 
 import java.io.Writer;
 import java.util.ArrayList;
@@ -7,8 +7,6 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import edu.gatech.cc.HTML2Mobile.ExtractorException;
-import edu.gatech.cc.HTML2Mobile.IExtractor;
 
 /**
  * An extractor that rewrites links for proxy purposes.

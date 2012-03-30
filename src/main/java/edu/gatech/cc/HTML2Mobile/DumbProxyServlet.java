@@ -14,6 +14,7 @@ import org.jsoup.nodes.Document;
 
 import com.sun.jersey.api.client.ClientResponse;
 
+import edu.gatech.cc.HTML2Mobile.extract.ExtractionController;
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkProxyExtractor;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkRewriter;
