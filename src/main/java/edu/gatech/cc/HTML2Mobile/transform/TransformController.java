@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.transform.TransformerException;
-
 /**
  * Runs a set of transformers.
  */
@@ -47,10 +45,10 @@ public class TransformController {
 	 * Runs the transformers on <code>contents</code>.
 	 * 
 	 * @param contents the contents to transform
-	 * @throws TransformerException if anything goes wrong
+	 * @throws TransformException if anything goes wrong
 	 * @throws NullPointerException if <code>contents</code> is <code>null</code>
 	 */
-	public void transform(StringBuffer contents) throws TransformerException {
+	public void transform(StringBuffer contents) throws TransformException {
 		if( contents == null ) {
 			throw new NullPointerException("contents is null");
 		}
