@@ -22,7 +22,7 @@ public class ContentExtractor implements IExtractor {
 	// final variables
 	public final static int COUNT = 100;
 	public final static double PERCENTAGE = 0.20;
-	public final static int SUMMARY_LENGTH = 150;
+	public final static int SUMMARY_LENGTH = 50;
 	// general extraction variables
 	public static Set<String> skip;
 	public static Set<String> base;
@@ -31,6 +31,7 @@ public class ContentExtractor implements IExtractor {
 		skip = new HashSet<String>();
 		skip.add("script");
 		skip.add("head");
+		skip.add("form");
 
 		base = new HashSet<String>();
 		base.add("table");
@@ -74,8 +75,9 @@ public class ContentExtractor implements IExtractor {
 			out.append("\t<content>");
 			Boolean temp = extract(doc.body(), out, doc.body().text().length());
 			out.append("\n\t</content>");
-			/* temp is only true if content was written to output.
-			 * Extraction controller can take ignore this exception.
+			/*
+			 * temp is only true if content was written to output. Extraction
+			 * controller can take ignore this exception.
 			 */
 			if (temp != null && !temp) {
 				throw new ExtractorException(
@@ -152,10 +154,14 @@ public class ContentExtractor implements IExtractor {
 
 	private void append(Element ele, Writer out) {
 		try {
-			out.append("\t\t<section>\n\t\t\t<summary>");
-			out.append(ele.text().substring(0, SUMMARY_LENGTH)).append(
-					"\n\t\t\t</summary>\n\t\t\t<text>");
-			out.append(ele.outerHtml());
+			out.append("\n\t\t<section>\n\t\t\t<summary>");
+			String text = ele.text();
+			out.append(text.substring(
+					0,
+					SUMMARY_LENGTH >= text.length() ? text.length()-1
+							: SUMMARY_LENGTH));
+			out.append("...\n\t\t\t</summary>\n\t\t\t<text>");
+			out.append(text);
 			out.append("\n\t\t\t</text>\n\t\t</section>");
 		} catch (IOException e) {
 			throw new ExtractorException(

@@ -25,6 +25,7 @@ import org.jsoup.nodes.Document;
 import edu.gatech.cc.HTML2Mobile.Parser.FormParserServlet;
 import edu.gatech.cc.HTML2Mobile.Parser.LinkParserServlet;
 import edu.gatech.cc.HTML2Mobile.Parser.MediaServlet;
+import edu.gatech.cc.HTML2Mobile.extract.ContentExtractor;
 
 @SuppressWarnings("serial")
 public class HTML2MobileServlet extends JSoupServlet {
@@ -94,6 +95,7 @@ public class HTML2MobileServlet extends JSoupServlet {
 		LinkParserServlet linkParser = new LinkParserServlet();
 		MediaServlet mediaParser = new MediaServlet();
 		FormParserServlet formParser = new FormParserServlet();
+		ContentExtractor contentParser = new ContentExtractor(120, 10, true);
 
 		toRet.append(linkParser.process(doc, req));
 		toRet.append(mediaParser.process(doc, req));

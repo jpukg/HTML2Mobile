@@ -21,13 +21,11 @@ import edu.gatech.cc.HTML2Mobile.extract.ExtractionController;
 import edu.gatech.cc.HTML2Mobile.extract.ExtractorException;
 import edu.gatech.cc.HTML2Mobile.extract.FormExtractor;
 import edu.gatech.cc.HTML2Mobile.extract.IFrameExtractor;
-import edu.gatech.cc.HTML2Mobile.extract.LinkExtractor;
 import edu.gatech.cc.HTML2Mobile.extract.MediaExtractor;
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkProxyExtractor;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkRewriter;
 import edu.gatech.cc.HTML2Mobile.proxy.RequestProxy;
-import edu.gatech.cc.HTML2Mobile.transform.TransformController;
 
 /**
  * HTML2Mobile front-end servlet.
@@ -127,12 +125,12 @@ public class FrontendServlet extends HttpServlet {
 		String requestURI = req.getRequestURI() + "?url=";
 
 		ExtractionController extraction = new ExtractionController(
-			new LinkProxyExtractor(requestURI, url),
-			new LinkExtractor(),
-			new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
-			new FormExtractor(),
-			new IFrameExtractor(),
-			new MediaExtractor());
+				new LinkProxyExtractor(requestURI, url),
+				//new LinkExtractor(),
+				new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
+				new FormExtractor(),
+				new IFrameExtractor(),
+				new MediaExtractor());
 
 		return extraction.extract(doc);
 	}
@@ -148,12 +146,13 @@ public class FrontendServlet extends HttpServlet {
 			throw new NullPointerException("contents is null");
 		}
 
-		TransformController transformer = new TransformController(
-			// TODO transformers here
-				);
+		//TransformController transformer = new TransformController(
+		// TODO transformers here
+		//);
 
-		transformer.transform(contents);
-		return contents.toString();
+		//transformer.transform(contents);
+		//return contents.toString();
+		return "";
 	}
 
 	/**
@@ -169,6 +168,7 @@ public class FrontendServlet extends HttpServlet {
 	 */
 	public String process(Document doc, HttpServletRequest req) {
 		StringBuffer extracted = new StringBuffer(this.extract(doc, req));
-		return this.transform(extracted);
+		return extracted.toString();
+		//return this.transform(extracted); TODO
 	}
 }

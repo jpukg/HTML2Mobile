@@ -24,11 +24,12 @@ public class FormExtractor implements IExtractor {
 
 		try {
 			Elements forms = doc.select("form");
-			out.append("<forms><count>").append(String.valueOf(forms.size())).append("</count>\n");
+			out.append("\n\t<forms><count>").append(String.valueOf(forms.size())).append("</count>\n");
 			for (Element e : forms) {
 				FormObj fobj = new FormObj(e);
 				out.append("\t").append(fobj.toHtml2Mobile_2()).append("\n");
 			}
+			out.append("\n\t\t</forms>");
 		} catch( IOException e ) {
 			throw new ExtractorException(e);
 		} catch( IllegalStateException e ) {

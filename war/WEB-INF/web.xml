@@ -9,6 +9,10 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<servlet-class>edu.gatech.cc.HTML2Mobile.HTML2MobileServlet</servlet-class>
 	</servlet>
 	<servlet>
+		<servlet-name>HTML2MobileFront</servlet-name>
+		<servlet-class>edu.gatech.cc.HTML2Mobile.FrontendServlet</servlet-class>
+	</servlet>
+	<servlet>
 	   <servlet-name>DumbProxy</servlet-name>
 	   <servlet-class>edu.gatech.cc.HTML2Mobile.DumbProxyServlet</servlet-class>
 	</servlet>
@@ -49,6 +53,10 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<url-pattern>/html2mobile</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
+		<servlet-name>HTML2MobileFront</servlet-name>
+		<url-pattern>/front</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
 		<servlet-name>Form_Parsing</servlet-name>
 		<url-pattern>/form_query</url-pattern>
 	</servlet-mapping>
@@ -61,6 +69,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<url-pattern>/linkparser</url-pattern>
 	</servlet-mapping>
 	<welcome-file-list>
-		<welcome-file>html2mobile</welcome-file>
+		<welcome-file>front</welcome-file>
 	</welcome-file-list>
 </web-app>
