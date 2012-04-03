@@ -48,13 +48,14 @@ public class TransformController {
 	 * @throws TransformException if anything goes wrong
 	 * @throws NullPointerException if <code>contents</code> is <code>null</code>
 	 */
-	public void transform(StringBuffer contents) throws TransformException {
+	public String transform(StringBuffer contents) throws TransformException {
 		if( contents == null ) {
 			throw new NullPointerException("contents is null");
 		}
 		for( ITransformer transformer : transformers ) {
 			transformer.transform(contents);
 		}
+		return contents.toString();
 	}
 
 	/**
