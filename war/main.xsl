@@ -93,7 +93,7 @@
 <xsl:template match="form">
 	<li>
 		<div style="border:1px solid #000;padding:10px;">
-			<xsl:value-of select="code"/>
+			<xsl:value-of select="code" disable-output-escaping="yes"/>
 		</div>
 	</li>
 </xsl:template>

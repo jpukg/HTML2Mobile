@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -115,8 +116,8 @@ public class ContentExtractor implements IExtractor {
 							bases.add(child);
 						} else {
 							Boolean temp = extract(child, out,
-									use_parent_text ? ele.text().length()
-											: reference_count);
+								use_parent_text ? ele.text().length()
+									: reference_count);
 							if (temp == null) {
 								// element is the anscestor of a base
 								bases.add(ele);
@@ -156,12 +157,12 @@ public class ContentExtractor implements IExtractor {
 		try {
 			out.append("\n\t\t<section>\n\t\t\t<summary>");
 			String text = ele.text();
-			out.append(text.substring(
-					0,
-					SUMMARY_LENGTH >= text.length() ? text.length()-1
-							: SUMMARY_LENGTH));
+			out.append(StringEscapeUtils.escapeXml(text.substring(
+				0,
+				SUMMARY_LENGTH >= text.length() ? text.length()-1
+					: SUMMARY_LENGTH)));
 			out.append("...\n\t\t\t</summary>\n\t\t\t<text>");
-			out.append(text);
+			out.append(StringEscapeUtils.escapeXml(text));
 			out.append("\n\t\t\t</text>\n\t\t</section>");
 		} catch (IOException e) {
 			throw new ExtractorException(

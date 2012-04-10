@@ -3,6 +3,7 @@ package edu.gatech.cc.HTML2Mobile.extract;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
@@ -78,12 +79,14 @@ public class MediaExtractor implements IExtractor {
 			out.append("</count>\n");
 			for(Element media : aud) {
 				out.append("\t\t<audio>\n");
+				//				out.append("<![CDATA[>");
 				out.append(printAttributes(media.attributes()));
 				for(Element source : media.children()) {
 					out.append("\t\t\t<" + source.tagName() + ">\n");
 					out.append(printAttributes(source.attributes()));
 					out.append("\t\t\t</" + source.tagName() + ">\n");
 				}
+				//				out.append("]]>");
 				out.append("\t\t</audios>\n");
 			}
 			out.append("\t</audios>\n");
@@ -101,7 +104,9 @@ public class MediaExtractor implements IExtractor {
 		StringBuilder toRet = new StringBuilder();
 		for(Attribute attrib : attribs) {
 			if(!attrib.getValue().isEmpty()) {
-				toRet.append("\t\t<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");
+				toRet.append("\t\t<").append(attrib.getKey()).append('>')
+				.append(StringEscapeUtils.escapeXml(attrib.getValue()))
+				.append("</").append(attrib.getKey()).append(">\n");//+ ">" + StringEscattrib.getValue() + "</" + attrib.getKey() + ">\n");
 			}
 		}
 		return toRet.toString();
