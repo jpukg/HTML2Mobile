@@ -5,6 +5,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.google.appengine.api.datastore.Text;
+
 @PersistenceCapable
 public class Xsl {
 	@PrimaryKey
@@ -12,10 +14,14 @@ public class Xsl {
 	private Long id;
 
 	@Persistent
-	private String name, xsl;
+	private String name;
+
+	@Persistent
+	private Text xsl;
 
 	public Xsl(String name, String xsl) {
-		this.xsl = xsl;
+		this.name = name;
+		this.xsl = new Text(xsl);
 	}
 
 	public long getId() {
@@ -31,10 +37,10 @@ public class Xsl {
 	}
 
 	public String getXsl() {
-		return xsl;
+		return xsl.getValue();
 	}
 
 	public void setXsl(String xsl) {
-		this.xsl = xsl;
+		this.xsl = new Text(xsl);
 	}
 }
