@@ -52,11 +52,25 @@ public class FrontendServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// TODO: move into JSoupServlet
+		PrintWriter writer = resp.getWriter();
+
 		if( DEBUG ) {
 			DebugUtil.dumpRequestInfo(req);
 		}
 
 		URL url = this.getProxiedURL(req);
+		if(url == null) {
+			writer.println("<html>");
+			writer.println("<body>");
+			writer.println("<h1>Please enter a URL</h1>");
+			writer.println("<form method='get'>");
+			writer.println("<input name='url' type='text'/>");
+			writer.println("<input name='Submit' type='submit'/>");
+			writer.println("</form>");
+			writer.println("</body>");
+			writer.println("</html>");
+			return;
+		}
 
 		RequestProxy proxy = new RequestProxy();
 		ClientResponse response = proxy.proxyRequest(url, req, resp);
@@ -69,7 +83,6 @@ public class FrontendServlet extends HttpServlet {
 		String output = this.process(doc, req);
 
 		// write out the new contents
-		PrintWriter writer = resp.getWriter();
 		writer.write(output);
 		writer.flush();
 	}
@@ -85,7 +98,7 @@ public class FrontendServlet extends HttpServlet {
 		// read requested URL
 		String urlParam = req.getParameter("url");
 		if( urlParam == null ) {
-			throw new ServletException("No URL");
+			return null;
 		}
 
 		// add protocol if not present
@@ -128,12 +141,12 @@ public class FrontendServlet extends HttpServlet {
 		String requestURI = req.getRequestURI() + "?url=";
 
 		ExtractionController extraction = new ExtractionController(
-			new LinkProxyExtractor(requestURI, url),
-			new LinkExtractor(),
-			new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
-			new FormExtractor(),
-			new IFrameExtractor(),
-			new MediaExtractor());
+				new LinkProxyExtractor(requestURI, url),
+				new LinkExtractor(),
+				new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
+				new FormExtractor(),
+				new IFrameExtractor(),
+				new MediaExtractor());
 
 		return extraction.extract(doc);
 	}

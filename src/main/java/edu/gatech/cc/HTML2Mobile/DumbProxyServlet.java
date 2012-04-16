@@ -106,7 +106,9 @@ public class DumbProxyServlet extends JSoupServlet {
 		String requestURI = req.getRequestURI() + "?url=";
 
 		ExtractionController extraction = new ExtractionController(
-			new LinkProxyExtractor(requestURI, url));
+				new LinkProxyExtractor(requestURI, url));
+
+
 
 		extraction.extract(doc);
 
