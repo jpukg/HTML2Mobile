@@ -60,7 +60,7 @@
 <xsl:template match="link">
 	<xsl:if test="text != ''">
 		<!-- CDATA-start: careful!!! URLs could be encoded... -->
-		<li><a href="{href}">{text}</a></li>
+		<li><a href="{href}"><xsl:value-of select="text" disable-output-escaping="yes" /></a></li>
 		<!-- CDATA-end -->
 	</xsl:if>
 </xsl:template>
@@ -75,8 +75,8 @@
 
 <xsl:template match="section">
 	<!-- CDATA-start -->
-	<li><xsl:value-of select="summary"/>
-		<ul><li><xsl:value-of select="text"/></li></ul>
+	<li><xsl:value-of select="summary" disable-output-escaping="yes" />
+		<ul><li><xsl:value-of select="text" disable-output-escaping="yes" /></li></ul>
 	</li>
 	<!-- CDATA-end -->
 </xsl:template>
@@ -94,7 +94,7 @@
 	<li>
 		<div style="border:1px solid #000;padding:10px;">
 			<!-- CDATA-start -->
-			<xsl:value-of select="code"/>
+			<xsl:value-of select="code" disable-output-escaping="yes" />
 			<!-- CDATA-end -->
 		</div>
 	</li>
@@ -141,13 +141,13 @@
 
 <xsl:template match="video">
 	<!-- CDATA-start -->
-	<li><xsl:value-of select="src"/></li>
+	<li><xsl:value-of select="src" disable-output-escaping="yes" /></li>
 	<!-- CDATA-end -->
 </xsl:template>
 
 <xsl:template match="audio">
 	<!-- CDATA-start -->
-	<li><xsl:value-of select="src"/></li>
+	<li><xsl:value-of select="src" disable-output-escaping="yes" /></li>
 	<!-- CDATA-end -->
 </xsl:template>
 

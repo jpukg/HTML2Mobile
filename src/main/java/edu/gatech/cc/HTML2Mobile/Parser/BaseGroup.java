@@ -3,6 +3,7 @@ package edu.gatech.cc.HTML2Mobile.Parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 
@@ -34,10 +35,15 @@ public class BaseGroup {
 
 			sb.append("\t\t<"+insideTag+">\n");
 
-			sb.append("\t\t\t<text>"+a.html()+"</text>\n");
+			sb.append("\t\t\t<text>")
+			.append(StringEscapeUtils.escapeXml(a.html()))
+			.append("</text>\n");
 			for(Attribute attrib : a.attributes()) {
 				if(!attrib.getValue().isEmpty()) {
-					sb.append("\t\t\t<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");
+					String key = attrib.getKey(),
+							val = StringEscapeUtils.escapeXml(attrib.getValue());
+					sb.append("\t\t\t<").append(key).append('>')
+					.append(val).append("</").append(key).append(">\n");
 				}
 			}
 

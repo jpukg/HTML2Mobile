@@ -128,12 +128,12 @@ public class FrontendServlet extends HttpServlet {
 		String requestURI = req.getRequestURI() + "?url=";
 
 		ExtractionController extraction = new ExtractionController(
-				new LinkProxyExtractor(requestURI, url),
-				new LinkExtractor(),
-				new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
-				new FormExtractor(),
-				new IFrameExtractor(),
-				new MediaExtractor());
+			new LinkProxyExtractor(requestURI, url),
+			new LinkExtractor(),
+			new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
+			new FormExtractor(),
+			new IFrameExtractor(),
+			new MediaExtractor());
 
 		return extraction.extract(doc);
 	}
@@ -159,7 +159,7 @@ public class FrontendServlet extends HttpServlet {
 	 * Processes the document, first extracting and then transforming it.
 	 * 
 	 * @param doc the parsed HTML document
-	 * @param req the servelet request
+	 * @param req the servlet request
 	 * @returns the final output document contents
 	 * 
 	 * @throws ExtractorException if there is a problem extracting content
@@ -167,8 +167,14 @@ public class FrontendServlet extends HttpServlet {
 	 * @throws NullPointerException if either argument is <code>null</code>
 	 */
 	public String process(Document doc, HttpServletRequest req) {
-		StringBuffer extracted = new StringBuffer(this.extract(doc, req));
-		//return extracted.toString();
-		return this.transform(extracted);
+		String extracted = this.extract(doc, req);
+		if( DEBUG ) {
+			System.out.println("EXTRACT RESULT:\n" + extracted);
+		}
+		String transformed = this.transform(new StringBuffer(extracted));
+		if( DEBUG ) {
+			System.out.println("TRANSFORMED RESULT:\n" + transformed);
+		}
+		return transformed;
 	}
 }
