@@ -39,8 +39,9 @@ public class XslServlet extends HttpServlet {
 		//Upload Form
 		writer.println("<h1>Upload your XSL stylesheet:</h1>");
 		writer.println("<form method='post' enctype='multipart/form-data'>");
-		writer.println("<input name='xslFile' type='file' size='40'> <br/>");
-		writer.println("<input name='Submit' type='submit' value='Sumbit'>");
+		writer.println("<input name='xslFile' type='file' size='40'/> <br/>");
+		writer.println("<input name='Submit' type='submit' value='Sumbit'/>");
+		writer.println("</form>");
 
 		//Display Existing XSL Forms
 		List<Xsl> xslList = xslDb.getAllTransforms();

@@ -24,6 +24,7 @@ public class XSLTransformer implements ITransformer {
 		Source xmlSource = new StreamSource(xmlReader);
 
 		// Set up Dummy XSL
+		// TODO: Pull in XSL from datastore
 		File xsltFile = new File("main.xsl");
 		Source xsltSource = new StreamSource(xsltFile);
 
