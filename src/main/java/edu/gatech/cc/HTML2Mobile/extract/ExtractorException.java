@@ -1,4 +1,4 @@
-package edu.gatech.cc.HTML2Mobile;
+package edu.gatech.cc.HTML2Mobile.extract;
 
 /**
  * Exception thrown by {@link IExtractor}.

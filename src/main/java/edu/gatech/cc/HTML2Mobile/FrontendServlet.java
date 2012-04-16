@@ -6,22 +6,34 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.TransformerException;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.sun.jersey.api.client.ClientResponse;
 
+import edu.gatech.cc.HTML2Mobile.extract.ContentExtractor;
 import edu.gatech.cc.HTML2Mobile.extract.ExtractionController;
+import edu.gatech.cc.HTML2Mobile.extract.ExtractorException;
+import edu.gatech.cc.HTML2Mobile.extract.FormExtractor;
+import edu.gatech.cc.HTML2Mobile.extract.IFrameExtractor;
+import edu.gatech.cc.HTML2Mobile.extract.LinkExtractor;
+import edu.gatech.cc.HTML2Mobile.extract.MediaExtractor;
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkProxyExtractor;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkRewriter;
 import edu.gatech.cc.HTML2Mobile.proxy.RequestProxy;
+import edu.gatech.cc.HTML2Mobile.transform.TransformController;
+import edu.gatech.cc.HTML2Mobile.transform.XSLTransformer;
 
-/** Proof of concept proxying servlet. */
-public class DumbProxyServlet extends JSoupServlet {
+/**
+ * HTML2Mobile front-end servlet.
+ */
+public class FrontendServlet extends HttpServlet {
 	//
 	// Static fields and methods
 	private static final long serialVersionUID = 1L;
@@ -53,7 +65,7 @@ public class DumbProxyServlet extends JSoupServlet {
 		String contents = response.getEntity(String.class);
 		Document doc = Jsoup.parse(contents);
 
-		// this implementation rewrites various element urls
+		// run the main extract/transform logic
 		String output = this.process(doc, req);
 
 		// write out the new contents
@@ -96,22 +108,73 @@ public class DumbProxyServlet extends JSoupServlet {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * This implementation rewrites various URLs to either proxy through us or to
-	 * hit the remote server directly.
+	 * Runs the extractors and returns the result.
+	 * 
+	 * @param doc the document to extract content from
+	 * @param req the servlet request
+	 * @return the extracted XML document
+	 * @throws ExtractorException if thrown by child extractors
+	 * @throws NullPointerException if either argument is <code>null</code>
 	 */
-	@Override
-	public String process(Document doc, HttpServletRequest req) throws ServletException, IOException {
+	protected String extract(Document doc, HttpServletRequest req) {
+		if( doc == null ) {
+			throw new NullPointerException("doc is null");
+		}
+		if( req == null ) {
+			throw new NullPointerException("req is null");
+		}
+
 		URL url = (URL)req.getAttribute(RequestProxy.ATTR_REMOTE_URL);
 		String requestURI = req.getRequestURI() + "?url=";
 
 		ExtractionController extraction = new ExtractionController(
-				new LinkProxyExtractor(requestURI, url));
+			new LinkProxyExtractor(requestURI, url),
+			new LinkExtractor(),
+			new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
+			new FormExtractor(),
+			new IFrameExtractor(),
+			new MediaExtractor());
 
+		return extraction.extract(doc);
+	}
 
+	/**
+	 * Transforms the XML document to the final output.
+	 * 
+	 * @param contents the extracted contents to transform
+	 * @return the transformed contents
+	 */
+	protected String transform(StringBuffer contents) {
+		if( contents == null ) {
+			throw new NullPointerException("contents is null");
+		}
 
-		extraction.extract(doc);
+		TransformController transformer = new TransformController(new XSLTransformer());
 
-		return doc.toString();
+		transformer.transform(contents);
+		return contents.toString();
+	}
+
+	/**
+	 * Processes the document, first extracting and then transforming it.
+	 * 
+	 * @param doc the parsed HTML document
+	 * @param req the servlet request
+	 * @returns the final output document contents
+	 * 
+	 * @throws ExtractorException if there is a problem extracting content
+	 * @throws TransformerException if there is a problem transforming the output
+	 * @throws NullPointerException if either argument is <code>null</code>
+	 */
+	public String process(Document doc, HttpServletRequest req) {
+		String extracted = this.extract(doc, req);
+		if( DEBUG ) {
+			System.out.println("EXTRACT RESULT:\n" + extracted);
+		}
+		String transformed = this.transform(new StringBuffer(extracted));
+		if( DEBUG ) {
+			System.out.println("TRANSFORMED RESULT:\n" + transformed);
+		}
+		return transformed;
 	}
 }

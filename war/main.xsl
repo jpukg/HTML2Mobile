@@ -17,40 +17,19 @@
 <ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 
 	<!-- Links List -->
-		<xsl:apply-templates select="html2mobile/document/links"/>
+		<xsl:apply-templates select="html2mobile/links"/>
 	<!-- End Links List -->
 	
 	<!-- Content List -->
-		<li>Content
-			<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
-	
-				<!-- Main Content -->
-				<li>Main Content
-					<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e">
-						<li></li>
-					<!-- End Main Content -->
-					</ul>
-				</li>
-	
-				<!-- Notes Content List -->
-				<li>Notes Content
-					<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
-						<xsl:apply-templates select="linkInst"/>
-					<!-- End Notes Content List -->
-					</ul>
-				</li>
-	
-			<!-- End Content List -->
-			</ul>
-		</li>
+		<xsl:apply-templates select="html2mobile/content"/>
 	<!-- End Content List -->
 	
 	<!-- Form -->
-		<xsl:apply-templates select="html2mobile/document/forms"/>
+		<xsl:apply-templates select="html2mobile/forms"/>
 	<!-- Form -->
 	
 	<!-- Media List -->
-		<xsl:apply-templates select="html2mobile/document/media"/>
+		<xsl:apply-templates select="html2mobile/media"/>
 	<!-- End Media List -->
 
 <!-- End Main List -->
@@ -89,7 +68,7 @@
 </xsl:template>
 
 <xsl:template match="content">
-	<li>Links (<xsl:value-of select="count"/>)
+	<li>Content <!-- (<xsl:value-of select="count"/>) -->
 		<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e">
 			<xsl:apply-templates select="section"/>
 		</ul>
@@ -97,8 +76,8 @@
 </xsl:template>
 
 <xsl:template match="section">
-	<li>Content Section Title
-		<xsl:value-of select="text"/><!--<a href="#TODO">more...</a> -->
+	<li><xsl:value-of select="summary"/>
+		<ul><li><xsl:value-of select="text"/></li></ul>
 	</li>
 </xsl:template>
 
@@ -114,7 +93,7 @@
 <xsl:template match="form">
 	<li>
 		<div style="border:1px solid #000;padding:10px;">
-			<xsl:value-of select="code"/>
+			<xsl:value-of select="code" disable-output-escaping="yes"/>
 		</div>
 	</li>
 </xsl:template>

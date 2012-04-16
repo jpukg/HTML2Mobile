@@ -1,5 +1,6 @@
 package edu.gatech.cc.HTML2Mobile.Parser;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.nodes.Element;
 
 public class FormObj {
@@ -52,13 +53,15 @@ public class FormObj {
 	public String toHtml2Mobile_2() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<form>\n\t");
-		sb.append(name == null?"" : "\t<name>"+name+"</name>\n\t");
-		sb.append("<action><![CDATA[").append(action).append("]]></action>\n\t");
-		sb.append("<method><![CDATA[").append(method).append("]]></method>\n\t");
+		sb.append(name == null?"" : "\t<name>"+StringEscapeUtils.escapeXml(name)+"</name>\n\t");
+		sb.append("<action>").append(StringEscapeUtils.escapeXml(action)).append("</action>\n\t");
+		sb.append("<method>").append(StringEscapeUtils.escapeXml(method)).append("</method>\n\t");
+		//		sb.append("<action><![CDATA[").append(action).append("]]></action>\n\t");
+		//		sb.append("<method><![CDATA[").append(method).append("]]></method>\n\t");
 		sb.append("\t\t<code>").append("\n");
-		sb.append("\t<![CDATA[\n");
-		sb.append(html);
-		sb.append("\n\t\t]]>\n\t</code>\n");
+		//		sb.append("\t<![CDATA[\n");
+		sb.append(StringEscapeUtils.escapeXml(html));
+		sb.append("\n\t\t</code>\n");//		sb.append("\n\t\t]]>\n\t</code>\n");
 		return sb.append("</form>\n").toString();
 	}
 }
