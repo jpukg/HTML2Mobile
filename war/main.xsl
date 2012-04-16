@@ -94,7 +94,9 @@
 	<li>
 		<div style="border:1px solid #000;padding:10px;">
 			<!-- CDATA-start -->
+			<form action="{action}" method="{method}">
 			<xsl:value-of select="code" disable-output-escaping="yes" />
+			</form>
 			<!-- CDATA-end -->
 		</div>
 	</li>
