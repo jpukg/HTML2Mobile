@@ -30,9 +30,7 @@ public class ContentExtractor implements IExtractor {
 		try {
 
 			Element body = doc.body();
-
 			skip_tags.add("script");
-
 			String output="<content>";
 
 			output+=this.stripSearchElement(body) +  "</content>";
@@ -48,7 +46,6 @@ public class ContentExtractor implements IExtractor {
 	public int numChildren(Element ele){
 		return ele.children().size();
 	}
-
 
 	public String stripSearchElement(Element main){
 
@@ -74,8 +71,6 @@ public class ContentExtractor implements IExtractor {
 				inner_output += stripSearchElement(ele);
 			}
 
-
-
 		}
 		if(inner_output.isEmpty()) {
 			return "";
@@ -99,8 +94,6 @@ public class ContentExtractor implements IExtractor {
 			output+=" " + attr.getKey() + "=\"" + attr.getValue()  + "\"";
 		}
 
-
-
 		output += ">";
 		return output;
 	}
@@ -108,7 +101,5 @@ public class ContentExtractor implements IExtractor {
 	public String endingTag(Element ele){
 		return "</" + ele.tagName() + ">";
 	}
-
-
 
 }
