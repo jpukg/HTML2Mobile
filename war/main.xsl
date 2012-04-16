@@ -59,11 +59,9 @@
 
 <xsl:template match="link">
 	<xsl:if test="text != ''">
-		<li>
-			<a href="#">
-				<xsl:value-of select="text"/>
-			</a>
-		</li>
+		<!-- CDATA-start: careful!!! URLs could be encoded... -->
+		<li><a href="{href}">{text}</a></li>
+		<!-- CDATA-end -->
 	</xsl:if>
 </xsl:template>
 
@@ -76,9 +74,11 @@
 </xsl:template>
 
 <xsl:template match="section">
+	<!-- CDATA-start -->
 	<li><xsl:value-of select="summary"/>
 		<ul><li><xsl:value-of select="text"/></li></ul>
 	</li>
+	<!-- CDATA-end -->
 </xsl:template>
 
 <xsl:template match="forms">
@@ -93,7 +93,9 @@
 <xsl:template match="form">
 	<li>
 		<div style="border:1px solid #000;padding:10px;">
+			<!-- CDATA-start -->
 			<xsl:value-of select="code"/>
+			<!-- CDATA-end -->
 		</div>
 	</li>
 </xsl:template>
@@ -107,6 +109,7 @@
 			<li>Pictures (<xsl:value-of select="pictures/count"/>)
 				<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="e"> 
 					<xsl:apply-templates select="pictures/picture"/>
+					
 				<!-- End Picture List -->
 				</ul>
 			</li>
@@ -131,18 +134,22 @@
 </xsl:template>
 
 <xsl:template match="picture">
+	<!-- CDATA-start -->
 	<li><img src='{src}' /></li>
+	<!-- CDATA-end -->
 </xsl:template>
 
 <xsl:template match="video">
+	<!-- CDATA-start -->
 	<li><xsl:value-of select="src"/></li>
+	<!-- CDATA-end -->
 </xsl:template>
 
 <xsl:template match="audio">
+	<!-- CDATA-start -->
 	<li><xsl:value-of select="src"/></li>
+	<!-- CDATA-end -->
 </xsl:template>
 
-
 </xsl:stylesheet>
-
 

@@ -55,18 +55,18 @@ public class MediaExtractor implements IExtractor {
 				out.append("\t\t<video type='html5'>\n");
 				out.append(printAttributes(media.attributes()));
 				for(Element source : media.children()) {
-					out.append("\t\t\t<").append(source.tagName()).append(">\n");
+					out.append("\t\t\t<").append(source.tagName()).append(">\n<![CDATA[");
 					out.append(printAttributes(source.attributes()));
-					out.append("</").append(source.tagName()).append(">\n");
+					out.append("]]></").append(source.tagName()).append(">\n");
 				}
 				out.append("\t\t</video>\n");
 			}
 
 			// Grab Videos(Youtube)
 			for(Element media : youtubeVids) {
-				out.append("\t\t<video type='youtube'>\n");
+				out.append("\t\t<video type='youtube'>\n<![CDATA[");
 				out.append(printAttributes(media.attributes()));
-				out.append("\t</video>\n");
+				out.append("]]>\t</video>\n");
 			}
 
 			out.append("\t</videos>\n");
@@ -80,9 +80,9 @@ public class MediaExtractor implements IExtractor {
 				out.append("\t\t<audio>\n");
 				out.append(printAttributes(media.attributes()));
 				for(Element source : media.children()) {
-					out.append("\t\t\t<" + source.tagName() + ">\n");
+					out.append("\t\t\t<" + source.tagName() + ">\n<![CDATA[");
 					out.append(printAttributes(source.attributes()));
-					out.append("\t\t\t</" + source.tagName() + ">\n");
+					out.append("]]>\t\t\t</" + source.tagName() + ">\n");
 				}
 				out.append("\t\t</audios>\n");
 			}
@@ -101,7 +101,7 @@ public class MediaExtractor implements IExtractor {
 		StringBuilder toRet = new StringBuilder();
 		for(Attribute attrib : attribs) {
 			if(!attrib.getValue().isEmpty()) {
-				toRet.append("\t\t<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");
+				toRet.append("\t\t<" + attrib.getKey() + "><![CDATA[" + attrib.getValue() + "]]></" + attrib.getKey() + ">\n");
 			}
 		}
 		return toRet.toString();

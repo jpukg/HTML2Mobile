@@ -70,10 +70,10 @@ public class LinkGroup {
 
 				sb.append("\t\t<link>\n");
 
-				sb.append("\t\t\t<text>"+a.html()+"</text>\n");
+				sb.append("\t\t\t<text><![CDATA["+a.html()+"]]></text>\n");
 				for(Attribute attrib : a.attributes()) {
 					if(!attrib.getValue().isEmpty()) {
-						sb.append("\t\t\t<" + attrib.getKey() + ">" + attrib.getValue() + "</" + attrib.getKey() + ">\n");
+						sb.append("\t\t\t<" + attrib.getKey() + "><![CDATA[" + attrib.getValue() + "]]></" + attrib.getKey() + ">\n");
 					}
 				}
 				sb.append("\t\t</link>\n");

@@ -154,15 +154,15 @@ public class ContentExtractor implements IExtractor {
 
 	private void append(Element ele, Writer out) {
 		try {
-			out.append("\n\t\t<section>\n\t\t\t<summary>");
+			out.append("\n\t\t<section>\n\t\t\t<summary><![CDATA[");
 			String text = ele.text();
 			out.append(text.substring(
 					0,
 					SUMMARY_LENGTH >= text.length() ? text.length()-1
 							: SUMMARY_LENGTH));
-			out.append("...\n\t\t\t</summary>\n\t\t\t<text>");
+			out.append("...]]>\n\t\t\t</summary>\n\t\t\t<text><![CDATA[");
 			out.append(text);
-			out.append("\n\t\t\t</text>\n\t\t</section>");
+			out.append("]]>\n\t\t\t</text>\n\t\t</section>");
 		} catch (IOException e) {
 			throw new ExtractorException(
 					"Unknown error writing extracted content to output.");
