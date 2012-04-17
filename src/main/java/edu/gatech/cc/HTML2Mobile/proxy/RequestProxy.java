@@ -36,7 +36,7 @@ import edu.gatech.cc.HTML2Mobile.helper.Pair;
  */
 public class RequestProxy {
 	/** Compile-time constant for logging debug info. */
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
 	/** Attribute name where the remote URL will be stored. */
 	public static final String ATTR_REMOTE_URL = "RequestProxy.proxyURL";
@@ -261,6 +261,16 @@ public class RequestProxy {
 			}
 			if( DEBUG ) {
 				System.out.println("LOCATION: " + location.toASCIIString());
+			}
+
+			// ensure absolute URI (otherwise URL conversion will fail)
+			if( !location.isAbsolute() ) {
+				try {
+					location = new URI(url.getProtocol(), null, url.getHost(), url.getPort(),
+						location.getPath(), location.getQuery(), location.getFragment());
+				} catch( URISyntaxException e ) {
+					throw new ProxyException("Failed to resolve relative redirect.", e);
+				}
 			}
 
 			isPost = false; // don't POST again when following redirects
