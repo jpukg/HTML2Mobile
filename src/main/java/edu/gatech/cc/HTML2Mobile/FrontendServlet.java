@@ -23,6 +23,7 @@ import edu.gatech.cc.HTML2Mobile.extract.FormExtractor;
 import edu.gatech.cc.HTML2Mobile.extract.IFrameExtractor;
 import edu.gatech.cc.HTML2Mobile.extract.LinkExtractor;
 import edu.gatech.cc.HTML2Mobile.extract.MediaExtractor;
+import edu.gatech.cc.HTML2Mobile.extract.StripTagsExtractor;
 import edu.gatech.cc.HTML2Mobile.helper.DebugUtil;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkProxyExtractor;
 import edu.gatech.cc.HTML2Mobile.proxy.LinkRewriter;
@@ -141,12 +142,13 @@ public class FrontendServlet extends HttpServlet {
 		String requestURI = req.getRequestURI() + "?url=";
 
 		ExtractionController extraction = new ExtractionController(
-				new LinkProxyExtractor(requestURI, url),
-				new LinkExtractor(),
-				new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
-				new FormExtractor(),
-				new IFrameExtractor(),
-				new MediaExtractor());
+			new StripTagsExtractor(),
+			new LinkProxyExtractor(requestURI, url),
+			new LinkExtractor(),
+			new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
+			new FormExtractor(),
+			new IFrameExtractor(),
+			new MediaExtractor());
 
 		return extraction.extract(doc);
 	}

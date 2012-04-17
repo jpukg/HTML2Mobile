@@ -36,7 +36,7 @@ import edu.gatech.cc.HTML2Mobile.helper.Pair;
  */
 public class RequestProxy {
 	/** Compile-time constant for logging debug info. */
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 
 	/** Attribute name where the remote URL will be stored. */
 	public static final String ATTR_REMOTE_URL = "RequestProxy.proxyURL";
@@ -274,7 +274,11 @@ public class RequestProxy {
 			try {
 				newUrl = location.toURL();
 			} catch( MalformedURLException e ) {
+				System.err.println("MalformedURLException for: " + location);
 				throw new ProxyException("Couldn't parse redirect URI as URL: " + location);
+			} catch( IllegalArgumentException e ) {
+				System.err.println("IllegalArgumentException for: " + location);
+				throw e;
 			}
 			if( newUrl.equals(url) ) {
 				throw new ProxyException("Infinite redirect to: " + newUrl.toExternalForm());
