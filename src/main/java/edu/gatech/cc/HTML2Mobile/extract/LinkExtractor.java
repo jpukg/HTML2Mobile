@@ -18,7 +18,7 @@ public class LinkExtractor implements IExtractor {
 	/** Default value for <code>maxSteps</code>. */
 	private static final int DEFAULT_MAX_STEPS = 3;
 	/** Default value for <code>minGroupSize</code>. */
-	private static final int DEFAULT_MIN_GROUP_SIZE = 3;
+	private static final int DEFAULT_MIN_GROUP_SIZE = 0; // FIXME: restore this after orphan handling
 
 	/** FIXME Max recursion depth per group? */
 	protected int maxSteps = DEFAULT_MAX_STEPS;
