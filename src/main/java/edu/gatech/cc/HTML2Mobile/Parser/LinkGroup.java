@@ -76,7 +76,7 @@ public class LinkGroup {
 			for (Element a : links) {
 
 				sb.append("\t\t<link>\n");
-				sb.append("\t\t\t<text><![CDATA["+StringEscapeUtils.escapeXml(a.html())+"]]></text>\n");
+				sb.append("\t\t\t<text><![CDATA["+StringEscapeUtils.escapeXml(a.text())+"]]></text>\n");
 				for(Attribute attrib : a.attributes()) {
 					if(!attrib.getValue().isEmpty()) {
 						sb.append("\t\t\t<" + attrib.getKey() + "><![CDATA[" + attrib.getValue() + "]]></" + attrib.getKey() + ">\n");
@@ -97,11 +97,11 @@ public class LinkGroup {
 	public static String orphansToXmlString() {
 		StringBuilder sb = new StringBuilder();
 		if (orphans.size() > 0) {
-			sb.append("\t<linkgroup><count>").append(orphans.size()).append("</count>\n");
+			sb.append("\t<linkgroup><count>orphans links</count>\n");
 			for (Element a : orphans) {
 
 				sb.append("\t\t<link>\n");
-				sb.append("\t\t\t<text><![CDATA["+StringEscapeUtils.escapeXml(a.html())+"]]></text>\n");
+				sb.append("\t\t\t<text><![CDATA["+StringEscapeUtils.escapeXml(a.text())+"]]></text>\n");
 				for(Attribute attrib : a.attributes()) {
 					if(!attrib.getValue().isEmpty()) {
 						sb.append("\t\t\t<" + attrib.getKey() + "><![CDATA[" + attrib.getValue() + "]]></" + attrib.getKey() + ">\n");

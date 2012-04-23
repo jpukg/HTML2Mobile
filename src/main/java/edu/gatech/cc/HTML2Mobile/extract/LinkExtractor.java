@@ -2,7 +2,6 @@ package edu.gatech.cc.HTML2Mobile.extract;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -97,21 +96,12 @@ public class LinkExtractor implements IExtractor {
 			throw new ExtractorException(e);
 		}
 
-		// filter for valid groups only
-		ArrayList<LinkGroup> validGroups = new ArrayList<LinkGroup>(parents.size());
-		for (LinkGroup g : parents.values()) {
-			if (g.valid()) {
-				validGroups.add(g);
-			}
-			// FIXME report discarded links?
-		}
-
 		// write out the results
 		try {
 			out.append("<links><count>");
-			out.append(String.valueOf(validGroups.size()));
+			out.append(String.valueOf(parents.size()));
 			out.append("</count>\n");
-			for( LinkGroup linkGroup : validGroups ) {
+			for( LinkGroup linkGroup : parents.values() ) {
 				out.append(linkGroup.toXmlString());
 			}
 			out.append(LinkGroup.orphansToXmlString());
