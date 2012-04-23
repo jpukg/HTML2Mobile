@@ -62,11 +62,17 @@ public class FrontendServlet extends HttpServlet {
 		URL url = this.getProxiedURL(req);
 		if(url == null) {
 			writer.println("<html>");
+			writer.println("<head>");
+			writer.println("<link rel='stylesheet' href='http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css' />");
+			writer.println("<script src='http://code.jquery.com/jquery-1.6.4.min.js'></script>");
+			writer.println("<script src='http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js'></script>");
+			writer.println("</head>");
 			writer.println("<body>");
-			writer.println("<h1>Please enter a URL</h1>");
+			writer.println("<h1>Welcome to HTML2Mobile!</h1>");
+			writer.println("<p>Please enter a URL to continue:</p>");
 			writer.println("<form method='get'>");
-			writer.println("<input name='url' type='text'/>");
-			writer.println("<input name='Submit' type='submit'/>");
+			writer.println("<input name='url' type='text' placeholder='http://t-square.gatech.edu' x-webkit-speech />");
+			writer.println("<input name='Submit' type='submit' value='Go!'/>");
 			writer.println("</form>");
 			writer.println("</body>");
 			writer.println("</html>");
@@ -142,13 +148,13 @@ public class FrontendServlet extends HttpServlet {
 		String requestURI = req.getRequestURI() + "?url=";
 
 		ExtractionController extraction = new ExtractionController(
-			new StripTagsExtractor(),
-			new LinkProxyExtractor(requestURI, url),
-			new LinkExtractor(),
-			new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
-			new FormExtractor(),
-			new IFrameExtractor(),
-			new MediaExtractor());
+				new StripTagsExtractor(),
+				new LinkProxyExtractor(requestURI, url),
+				new LinkExtractor(),
+				new ContentExtractor(ContentExtractor.COUNT), // FIXME settings?
+				new FormExtractor(),
+				new IFrameExtractor(),
+				new MediaExtractor());
 
 		return extraction.extract(doc);
 	}
