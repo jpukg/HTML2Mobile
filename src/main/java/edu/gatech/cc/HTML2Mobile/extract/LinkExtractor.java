@@ -114,6 +114,7 @@ public class LinkExtractor implements IExtractor {
 			for( LinkGroup linkGroup : validGroups ) {
 				out.append(linkGroup.toXmlString());
 			}
+			out.append(LinkGroup.orphansToXmlString());
 			out.append("</links>\n");
 		} catch( IOException e ) {
 			throw new ExtractorException(e);
