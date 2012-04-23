@@ -9,6 +9,12 @@ import org.jsoup.nodes.Element;
 
 public class LinkGroup {
 
+	private static List<Element> orphans;
+
+	static {
+		orphans = new LinkedList<Element>();
+	}
+
 	private static int creationCount = 0;
 
 	public static enum LinkGroupFormats {
@@ -80,10 +86,33 @@ public class LinkGroup {
 				//sb.append("\t\t<link><![CDATA[").append(a.toString()).append("]]></link>\n");
 			}
 			sb.append("\t</linkgroup>\n");
+		} else {
+			orphans.addAll(links);
 		}
 		return sb.toString();
+	}
 
 
+
+	public static String orphansToXmlString() {
+		StringBuilder sb = new StringBuilder();
+		if (orphans.size() > 0) {
+			sb.append("\t<linkgroup><count>").append(orphans.size()).append("</count>\n");
+			for (Element a : orphans) {
+
+				sb.append("\t\t<link>\n");
+				sb.append("\t\t\t<text><![CDATA["+StringEscapeUtils.escapeXml(a.html())+"]]></text>\n");
+				for(Attribute attrib : a.attributes()) {
+					if(!attrib.getValue().isEmpty()) {
+						sb.append("\t\t\t<" + attrib.getKey() + "><![CDATA[" + attrib.getValue() + "]]></" + attrib.getKey() + ">\n");
+					}
+				}
+				sb.append("\t\t</link>\n");
+				//sb.append("\t\t<link><![CDATA[").append(a.toString()).append("]]></link>\n");
+			}
+			sb.append("\t</linkgroup>\n");
+		}
+		return sb.toString();
 	}
 
 	@Override
