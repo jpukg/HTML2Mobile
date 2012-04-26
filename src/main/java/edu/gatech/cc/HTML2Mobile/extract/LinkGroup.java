@@ -113,6 +113,7 @@ public class LinkGroup {
 				//sb.append("\t\t<link><![CDATA[").append(a.toString()).append("]]></link>\n");
 			}
 			sb.append("\t</linkgroup>\n");
+			orphans.clear();
 		}
 		return sb.toString();
 	}
