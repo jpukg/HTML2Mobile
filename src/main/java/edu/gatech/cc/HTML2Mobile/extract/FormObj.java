@@ -1,4 +1,4 @@
-package edu.gatech.cc.HTML2Mobile.Parser;
+package edu.gatech.cc.HTML2Mobile.extract;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.nodes.Element;

@@ -7,7 +7,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import edu.gatech.cc.HTML2Mobile.Parser.BaseGroup;
 
 /**
  * Extractor that pulls <code>&lt;iframe&gt;</code> elements.

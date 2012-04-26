@@ -5,10 +5,6 @@ xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	<servlet>
-		<servlet-name>HTML2Mobile</servlet-name>
-		<servlet-class>edu.gatech.cc.HTML2Mobile.HTML2MobileServlet</servlet-class>
-	</servlet>
-	<servlet>
 		<servlet-name>HTML2MobileFront</servlet-name>
 		<servlet-class>edu.gatech.cc.HTML2Mobile.FrontendServlet</servlet-class>
 	</servlet>
@@ -17,60 +13,16 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	   <servlet-class>edu.gatech.cc.HTML2Mobile.DumbProxyServlet</servlet-class>
 	</servlet>
 	<servlet>
-	   <servlet-name>IFrame_Parsing</servlet-name>
-	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.IFrameServlet</servlet-class>
-	</servlet>
-	<servlet>
-	   <servlet-name>Content_Parsing</servlet-name>
-	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.ContentParserServlet</servlet-class>
-	</servlet>
-	<servlet>
-	   <servlet-name>Form_Parsing</servlet-name>
-	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.FormParserServlet</servlet-class>
-	</servlet>
-	<servlet>
-	   <servlet-name>Media_Parsing</servlet-name>
-	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.MediaServlet</servlet-class>
-	</servlet>
-	<servlet>
-	   <servlet-name>Link_Parsing</servlet-name>
-	   <servlet-class>edu.gatech.cc.HTML2Mobile.Parser.LinkParserServlet</servlet-class>
-	</servlet>
-	<servlet>
 	   <servlet-name>XslManager</servlet-name>
 	   <servlet-class>edu.gatech.cc.HTML2Mobile.XslServlet</servlet-class>
 	</servlet>
-	<servlet-mapping>
-		<servlet-name>DumbProxy</servlet-name>
-		<url-pattern>/proxy</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>IFrame_Parsing</servlet-name>
-		<url-pattern>/iframeparser</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>Content_Parsing</servlet-name>
-		<url-pattern>/contentparser</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>HTML2Mobile</servlet-name>
-		<url-pattern>/html2mobile</url-pattern>
-	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>HTML2MobileFront</servlet-name>
 		<url-pattern>/front</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
-		<servlet-name>Form_Parsing</servlet-name>
-		<url-pattern>/form_query</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>Media_Parsing</servlet-name>
-		<url-pattern>/media</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>Link_Parsing</servlet-name>
-		<url-pattern>/linkparser</url-pattern>
+		<servlet-name>DumbProxy</servlet-name>
+		<url-pattern>/proxy</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>XslManager</servlet-name>

@@ -9,7 +9,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import edu.gatech.cc.HTML2Mobile.Parser.LinkGroup;
 
 /**
  * Extractor for link (<code>&lt;a&gt;</code>) elements.

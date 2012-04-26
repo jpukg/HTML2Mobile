@@ -1,4 +1,4 @@
-package edu.gatech.cc.HTML2Mobile.Parser;
+package edu.gatech.cc.HTML2Mobile.extract;
 
 import java.util.ArrayList;
 import java.util.List;

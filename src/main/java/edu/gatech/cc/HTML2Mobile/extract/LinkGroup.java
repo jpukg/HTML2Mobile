@@ -1,4 +1,4 @@
-package edu.gatech.cc.HTML2Mobile.Parser;
+package edu.gatech.cc.HTML2Mobile.extract;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -8,6 +8,8 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 
 public class LinkGroup {
+
+	public static final int MIN_GROUP_SIZE = 3;
 
 	private static List<Element> orphans;
 
@@ -28,7 +30,7 @@ public class LinkGroup {
 	private int creationId;
 
 	public boolean valid() {
-		return links.size() >= LinkParserServlet.MIN_GROUP_SIZE;
+		return links.size() >= MIN_GROUP_SIZE;
 	}
 
 	public String getName() {
