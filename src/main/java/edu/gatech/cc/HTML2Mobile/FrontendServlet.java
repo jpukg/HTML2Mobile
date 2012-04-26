@@ -88,10 +88,10 @@ public class FrontendServlet extends HttpServlet {
 		// parse the document
 		String contents = response.getEntity(String.class);
 		Document doc = Jsoup.parse(contents);
-		
+
 		// expand iframe elements
 		this.expandIFrames(doc, proxy, req, resp);
-		
+
 		// run the main extract/transform logic
 		String output = this.process(doc, req);
 
@@ -132,13 +132,13 @@ public class FrontendServlet extends HttpServlet {
 			throw new ServletException("Cannot parse: " + urlParam, e);
 		}
 	}
-	
+
 	/**
-	 * Fetches contents of <code>&lt;iframe&rt;</code> elements in <code>doc</code> 
-	 * and appends the <code>&lt;body&gt;</code> to the <code>&lt;iframe&rt;</code> 
-	 * element.  
+	 * Fetches contents of <code>&lt;iframe&rt;</code> elements in <code>doc</code>
+	 * and appends the <code>&lt;body&gt;</code> to the <code>&lt;iframe&rt;</code>
+	 * element.
 	 * 
-	 * <p>This method modifies <code>doc</code> in place.  It does not recurse 
+	 * <p>This method modifies <code>doc</code> in place.  It does not recurse
 	 * if there are <code>&lt;iframe&rt;</code> elements in the fetched content.
 	 * Errors are printed to the console but otherwise suppressed.
 	 * </p>
@@ -149,36 +149,45 @@ public class FrontendServlet extends HttpServlet {
 	 * @param resp  the current servlet response
 	 * @throws NullPointerException if any argument is <code>null</code>
 	 */
-	protected void expandIFrames(Document doc, RequestProxy proxy, HttpServletRequest req, 
+	protected void expandIFrames(Document doc, RequestProxy proxy, HttpServletRequest req,
 			HttpServletResponse resp) {
-		if( doc == null ) throw new NullPointerException("doc is null");
-		if( proxy == null ) throw new NullPointerException("proxy is null");
-		if( req == null ) throw new NullPointerException("req is null");
-		if( resp == null ) throw new NullPointerException("resp is null");
-		
+		if( doc == null ) {
+			throw new NullPointerException("doc is null");
+		}
+		if( proxy == null ) {
+			throw new NullPointerException("proxy is null");
+		}
+		if( req == null ) {
+			throw new NullPointerException("req is null");
+		}
+		if( resp == null ) {
+			throw new NullPointerException("resp is null");
+		}
+
 		for( Element iframe : doc.select("iframe") ) {
 			String srcAttr = iframe.attr("src");
 
-			if( srcAttr == null )
+			if( srcAttr == null ) {
 				continue;
-			
+			}
+
 			// add protocol if not present
 			if( !LinkRewriter.hasHost(srcAttr) ) {
 				srcAttr = req.getScheme() + "://" + srcAttr;
 			} else if ( srcAttr.startsWith("//") ) {
 				srcAttr = req.getScheme() + ":" + srcAttr;
 			}
-			
+
 			try {
 				// request frame contents
-				URL srcURL = new URL(srcAttr);	
+				URL srcURL = new URL(srcAttr);
 				ClientResponse frameResponse = proxy.proxyRequest(srcURL, req, resp);
-				
+
 				// append body to iframe element in the original document
 				Document frameDoc = Jsoup.parse(frameResponse.getEntity(String.class));
 				iframe.appendChild(frameDoc.body());
-				
-			// record errors but don't fail
+
+				// record errors but don't fail
 			} catch( ProxyException e ) {
 				System.err.println("Failed to fetch frame contents from: " + srcAttr);
 				System.err.println("ProxyException message: " + e.getMessage());
@@ -188,7 +197,7 @@ public class FrontendServlet extends HttpServlet {
 			} catch( IllegalArgumentException e ) {
 				System.err.println("Failed to parse frame contents from: " + srcAttr);
 				System.err.println("IllegalArgumentException message: " + e.getMessage());
-				
+
 				// print this one in case it wasn't Jsoup as expected
 				e.printStackTrace();
 			}
@@ -259,6 +268,10 @@ public class FrontendServlet extends HttpServlet {
 		String extracted = this.extract(doc, req);
 		if( DEBUG ) {
 			System.out.println("EXTRACT RESULT:\n" + extracted);
+		}
+		String xslParam = req.getParameter("xmlOnly");
+		if( xslParam != null ) {
+			return extracted;
 		}
 		String transformed = this.transform(new StringBuffer(extracted));
 		if( DEBUG ) {
